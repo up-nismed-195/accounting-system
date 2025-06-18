@@ -9,23 +9,26 @@
 </script>
 
 <div class="flex h-screen font-display font-semibold">
-    <aside class="w-72 bg-bg text-display flex flex-col bg-[#f1f5f2]/50 px-4 py-4">
-        <span class="text-md mb-4">
+    <aside class="w-72 bg-bg text-display flex flex-col bg-[#f1f5f2]/50 px-4 py-4 shadow-md">
+        <span class="text-lg mb-2">
           Menu
-        </span>
+        </span>   
         <nav class="w-full text-sm flex flex-col gap-1">
           {#each [
+            {name: "Dashboard", link: "/"},
             {name: "Vouchers", link: "/vouchers"},
             {name: "Projects", link: "/projects"},
             {name: "History", link: "/history"},
             {name: "Reports", link: "/reports"},
           ] as item}
-          <a href={item.link} class="block w-full py-3 px-5 rounded-full {page.url.pathname === item.link ? "bg-secondary/50" : "hover:bg-gray-200/80"}">        
+          <a href={item.link} class=" block w-full py-3 px-5 rounded-full 
+          {page.url.pathname === item.link ? "bg-secondary/50 text-nismed" : "hover:bg-gray-200/60"}">
             {item.name}
           </a>
           {/each}
         </nav>
-        <span class="text-sm mt-4 py-3 border-t border-display/30">
+
+        <span class="text-lg font-bold mt-4 py-2 border-t border-display/30">
           Help
         </span>
 
