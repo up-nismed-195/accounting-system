@@ -25,6 +25,22 @@
           </a>
           {/each}
         </nav>
+        <span class="text-sm mt-4 py-3 border-t border-display/30">
+          Help
+        </span>
+
+        <nav class="w-full text-sm flex flex-col gap-1">
+          {#each [
+            {name: "How to use", link: "/how-to-use"},
+            {name: "People", link: "/people"},
+            {name: "About", link: "/about"},
+          ] as item}
+          <a href={item.link} class="block w-full py-3 px-5 rounded-full {page.url.pathname === item.link ? "bg-secondary/50" : "hover:bg-gray-200/80"}">        
+            {item.name}
+          </a>
+          {/each}
+        </nav>
+
     </aside>
     <main class="flex-1 px-16 py-16">
         {@render children()}
