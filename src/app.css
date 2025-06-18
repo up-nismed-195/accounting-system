@@ -3,4 +3,8 @@
 
 @theme {
   --font-display: "Inter", monospace; 
+  --color-nismed: #106635;
+  --color-secondary: #B4D4C2;
+  --color-tertiary: #EBF6EF;
+  --color-display: #49454F;
 }
