@@ -1,9 +1,13 @@
 <script>
   import { writable } from 'svelte/store';
+  import { onMount, onDestroy } from 'svelte';
 
   const headers = [
     "Payee", "Address", "DV No.", "Payment Mode", "Particulars", "TIN ID No.", "Remarks", "Actions", 
   ];
+
+  const projects = ["UNICEF", "NISMED"]
+  const base_dv = 0
 
   // Lock state for each column
   let locks = Array(headers.length).fill(false);
@@ -48,6 +52,29 @@
       return [...r];
     });
   }
+
+  function handleKeydown(event) {
+    if (event.ctrlKey) {
+      // Check if key is a single digit and within headers range
+      const idx = parseInt(event.key, 10);
+      if (!isNaN(idx) && idx >= 0 && idx < headers.length) {
+        event.preventDefault(); // Prevent browser default (e.g., Ctrl+1 tab switch)
+        toggleLock(idx - 1);
+      }
+    }
+  }
+
+  onMount(() => { 
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleKeydown);
+    }
+  });
+
+  onDestroy(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('keydown', handleKeydown);
+    }
+  });
 </script>
 
 <h1 class="text-2xl text-display mb-5">Create a Voucher</h1>

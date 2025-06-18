@@ -4,12 +4,10 @@
 	import { onMount } from "svelte";
   let { children } = $props();
 
-
-
 </script>
 
 <div class="flex h-screen font-display font-semibold">
-    <aside class="w-72 bg-bg text-display flex flex-col bg-[#f1f5f2]/50 px-4 py-4 shadow-md">
+    <aside class="w-64   bg-bg text-display flex flex-col bg-[#f1f5f2]/50 px-4 py-4 shadow-md">
         <span class="text-lg mb-2">
           Menu
         </span>   
@@ -45,7 +43,7 @@
         </nav>
 
     </aside>
-    <main class="flex-1 px-16 py-16">
+    <main class="flex-1 py-15 px-10">
         {@render children()}
     </main>
 </div>
