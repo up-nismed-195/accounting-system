@@ -2,20 +2,25 @@
     import Row from "./Row.svelte";
     import { table_data } from "./data.svelte";
 
-    const headers = ["ID", "Project", "Date", "DV No.", "Payee", "Amount", 
-                    "Particular", "Gross", "Remarks", "Address", "Actions"]
+    const headers = ["ID", "Project", "Date", "No.", "Payee", "Amount", "Mode",
+                    "Particulars", "Gross", "Remarks", "Address", "Authorized Rep", "Approver", 
+                    "Apply", "Actions"]
 
     function addRow() {
       let toAdd = {
-        "Project": Math.round(Math.random() * 100, 2),
-        "Date": 1, 
-        "DV No.": 1, 
-        "Payee": 1, 
-        "Amount": 1,      
-        "Particular": 1, 
-        "Gross": 1, 
-        "Remarks": 1, 
-        "Address": Math.round(Math.random() * 100, 2),
+        "Project": '1',
+        "Date": '2', 
+        "No.": '3', 
+        "Payee": '4', 
+        "Amount": '5',
+        "Mode": '6',   
+        "Particulars": '7', 
+        "Gross": "8",
+        "Remarks": '9', 
+        "Address": '10',
+        "Authorized Rep": '11',
+        "Approver": '12',
+        "Apply Tax": false,
       }
 
       $table_data.rows = [...$table_data.rows, toAdd]
@@ -48,3 +53,4 @@
     {/each}
 </tbody>
 </table>
+
