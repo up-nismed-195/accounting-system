@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voucher Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="voucherGenerator.js"></script>
+</head>
+<body>
+    <h1>Voucher Generator</h1>
+    <form onsubmit="generateVoucher(event)">
+        <label>Payee: <input type="text" id="payee" required></label><br>
+        <label>Address: <input type="text" id="address" required></label><br>
+        <label>DV No.: <input type="text" id="dv_no"></label><br>
+        <label>Mode of Payment: <input type="text" id="mode" value="Cash" required></label><br>
+        <label>Charge vs.: <input type="text" id="charge" required></label><br>
+        <label>Particulars: <textarea id="particulars" rows="4" cols="50"></textarea></label><br>
+        <label>Authorized Rep: <input type="text" id="authorized_rep" required></label><br>
+        <label>Approver: <input type="text" id="approver" required></label><br>
+        <label>Amount: <input type="number" step="0.01" id="amount" required></label><br>
+        <label><input type="checkbox" id="apply_tax" checked> Apply Less 10% Tax</label><br>
+        <button type="submit">Generate PDF</button>
+    </form>
+</body>
+</html>
