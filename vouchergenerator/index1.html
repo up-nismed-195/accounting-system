@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disbursement Voucher Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.95em;
+        }
+
+        input[type="text"], 
+        input[type="number"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus, 
+        input[type="number"]:focus, 
+        textarea:focus, 
+        select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group:hover {
+            border-color: #cbd5e0;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #4facfe;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 160px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #4a5568;
+            box-shadow: 0 4px 15px rgba(168, 237, 234, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(168, 237, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .sample-data-info {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ff8a80;
+        }
+
+        .sample-data-info h3 {
+            color: #d84315;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .sample-data-info p {
+            color: #bf360c;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📄 Voucher Generator</h1>
+            <p>Foundation for the Promotion of Science and Mathematics Education and Research, Inc.</p>
+        </div>
+
+        <div class="form-container">
+            <div class="sample-data-info">
+                <h3>🚀 Quick Test</h3>
+                <p>Click "Load Sample Data" to populate the form with test data, then "Generate Voucher" to create your PDF!</p>
+            </div>
+
+            <form id="voucherForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="payee">Payee *</label>
+                        <input type="text" id="payee" name="payee" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dv_no">DV Number</label>
+                        <input type="text" id="dv_no" name="dv_no" placeholder="SO-25-001">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="address">Address *</label>
+                        <input type="text" id="address" name="address" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mode">Mode of Payment *</label>
+                        <select id="mode" name="mode" required>
+                            <option value="">Select payment method</option>
+                            <option value="Check">Check</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Online Payment">Online Payment</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount (PHP) *</label>
+                        <input type="number" id="amount" name="amount" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="charge">Charge Against *</label>
+                        <input type="text" id="charge" name="charge" placeholder="e.g., Office Supplies, Travel Expenses" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="particulars">Particulars *</label>
+                        <textarea id="particulars" name="particulars" placeholder="Detailed description of the expense" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="authorized_rep">Authorized Representative *</label>
+                        <input type="text" id="authorized_rep" name="authorized_rep" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="approver">Approver (Executive Director) *</label>
+                        <input type="text" id="approver" name="approver" required>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="apply_tax" name="apply_tax">
+                    <label for="apply_tax">Apply 10% Tax Deduction</label>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="loadSampleData()">
+                        Load Sample Data
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Generate Voucher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Generates a disbursement voucher PDF
+         * @param {Object} voucherData - The voucher data object
+         */
+        function generateVoucher(voucherData) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Extract data with defaults
+            const {
+                payee,
+                address,
+                dv_no = "SO-25-001",
+                mode,
+                charge,
+                particulars,
+                authorized_rep,
+                approver,
+                amount,
+                apply_tax = false
+            } = voucherData;
+
+            // Calculate amounts
+            const tax = apply_tax ? amount * 0.10 : 0;
+            const total = amount - tax;
+            
+            // Format amounts (PHP format with space thousands separator and comma decimal)
+            const totalFormatted = `PHP ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+            const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+            const amountFormatted = `PHP ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+            
+            // Generate date
+            const date = new Date().toLocaleDateString('en-GB', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: '2-digit' 
+            }).replace(/ /g, '-');
+
+            /**
+             * Converts a number to words
+             */
+            function numberToWords(n) {
+                const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven",
+                    "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+                const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+                const scales = ["", "Thousand", "Million", "Billion"];
+
+                if (n === 0) return "Zero";
+                
+                let result = "";
+                let group = 0;
+                
+                while (n > 0) {
+                    const chunk = n % 1000;
+                    if (chunk) {
+                        let str = "";
+                        const hundreds = Math.floor(chunk / 100);
+                        const tensUnits = chunk % 100;
+                        
+                        if (hundreds) str += ones[hundreds] + " Hundred ";
+                        if (tensUnits < 20) {
+                            str += ones[tensUnits];
+                        } else {
+                            str += tens[Math.floor(tensUnits / 10)] + " " + ones[tensUnits % 10];
+                        }
+                        result = str.trim() + " " + scales[group] + " " + result;
+                    }
+                    n = Math.floor(n / 1000);
+                    group++;
+                }
+                return result.trim();
+            }
+
+            // Convert total amount to words
+            const pesos = Math.floor(total);
+            const cents = Math.round((total - pesos) * 100);
+            let words = numberToWords(pesos) + " Pesos";
+            if (cents > 0) {
+                words += " and " + numberToWords(cents) + " Centavos";
+            }
+
+            // Start building the PDF
+            // Header
+            doc.setFont("Times", "bold");
+            doc.setFontSize(12);
+            doc.text("Foundation for the Promotion of Science and Mathematics Education and Research, Inc.", 105, 20, { align: "center" });
+            doc.text("DISBURSEMENT VOUCHER", 105, 28, { align: "center" });
+
+            // Main border
+            doc.rect(10, 10, 190, 240);
+
+            // Payee and DV Number row
+            doc.setFont("Times", "normal");
+            doc.setFontSize(10);
+            doc.rect(10, 35, 20, 8);
+            doc.text("Payee:", 12, 41);
+            doc.setFont("Times", "bold");
+            doc.rect(30, 35, 105, 8);
+            doc.text(payee, 32, 41);
+            doc.setFont("Times", "normal");
+            doc.rect(135, 35, 30, 8);
+            doc.text("DV No.", 137, 41);
+            doc.rect(165, 35, 35, 8);
+            doc.text(dv_no, 167, 41);
+
+            // Address and Date row
+            doc.rect(10, 43, 20, 8);
+            doc.text("Address:", 12, 49);
+            doc.rect(30, 43, 105, 8);
+            doc.text(address, 32, 49);
+            doc.rect(135, 43, 30, 8);
+            doc.text("Date:", 137, 49);
+            doc.rect(165, 43, 35, 8);
+            doc.text(date, 167, 49);
+
+            // Charge vs row
+            doc.rect(10, 51, 20, 8);
+            doc.text("Charge vs:", 12, 57);
+            doc.rect(30, 51, 170, 8);
+            doc.setFont("Times", "bold");
+            doc.text(charge, 32, 57);
+
+            // Mode of Payment row
+            doc.setFont("Times", "normal");
+            doc.rect(10, 59, 30, 8);
+            doc.text("Mode of Payment:", 12, 65);
+            doc.rect(40, 59, 160, 8);
+            doc.text(mode, 42, 65);
+
+            // Table headers
+            doc.setFont("Times", "bold");
+            doc.rect(10, 67, 120, 8);
+            doc.text("Particulars", 70, 73, { align: "center" });
+            doc.rect(130, 67, 70, 8);
+            doc.text("Amount", 165, 73, { align: "center" });
+
+            // Particulars and amount
+            doc.setFont("Times", "normal");
+            doc.rect(10, 75, 120, 12);
+            doc.text(particulars, 12, 83);
+            doc.rect(130, 75, 70, 12);
+            doc.text(amountFormatted, 195, 83, { align: "right" });
+
+            // Tax deduction (if applicable)
+            let currentY = 87;
+            if (apply_tax) {
+                doc.rect(10, currentY, 120, 12);
+                doc.text("Less 10% Tax", 125, currentY + 8, { align: "right" });
+                doc.rect(130, currentY, 70, 12);
+                doc.text(taxFormatted, 195, currentY + 8, { align: "right" });
+                currentY += 12;
+            }
+
+            // Total row
+            doc.setFont("Times", "bold");
+            doc.rect(10, currentY, 120, 12);
+            doc.text("Total", 125, currentY + 8, { align: "right" });
+            doc.rect(130, currentY, 70, 12);
+            doc.text(totalFormatted, 195, currentY + 8, { align: "right" });
+
+            // Signature sections
+            const signatureY = currentY + 12;
+            
+            // Section A - Authorized Representative
+            doc.setFont("Times", "bold");
+            doc.rect(10, signatureY, 95, 50);
+            doc.text("A", 12, signatureY + 8);
+            doc.setFont("Times", "normal");
+            doc.setFontSize(9);
+            doc.text("Certified: Expenses/cash advance necessary,", 12, signatureY + 15);
+            doc.text("lawful, and incurred under my direct supervision", 12, signatureY + 19);
+            doc.setFont("Times", "bold");
+            doc.setFontSize(10);
+            doc.text(authorized_rep, 57.5, signatureY + 34, { align: "center" });
+            doc.setFont("Times", "normal");
+            doc.setFontSize(9);
+            doc.text("Signature over Printed Name", 57.5, signatureY + 40, { align: "center" });
+            doc.text("of Authorized Representative", 57.5, signatureY + 44, { align: "center" });
+            doc.text(`Date: ${date}`, 57.5, signatureY + 48, { align: "center" });
+
+            // Section B - Approver
+            doc.setFont("Times", "bold");
+            doc.rect(105, signatureY, 95, 50);
+            doc.text("B", 107, signatureY + 8);
+            doc.setFont("Times", "normal");
+            doc.setFontSize(9);
+            doc.text("Approved for payment by:", 107, signatureY + 15);
+            doc.setFont("Times", "bold");
+            doc.setFontSize(10);
+            doc.text(approver, 152.5, signatureY + 34, { align: "center" });
+            doc.setFont("Times", "normal");
+            doc.setFontSize(9);
+            doc.text("Signature over Printed Name", 152.5, signatureY + 40, { align: "center" });
+            doc.text("Executive Director, FPSMER, Inc.", 152.5, signatureY + 44, { align: "center" });
+            doc.text(`Date: ${date}`, 152.5, signatureY + 48, { align: "center" });
+
+            // Section C - Receipt
+            const receiptY = signatureY + 55;
+            doc.setFont("Times", "bold");
+            doc.setFontSize(10);
+            doc.text("C", 12, receiptY);
+            doc.setFont("Times", "normal");
+            doc.setFontSize(10);
+            
+            const receiptText = `Received from the Foundation for the Promotion of Science and Mathematics Education and Research, Inc. the amount of ${words}`;
+            const receiptLines = doc.splitTextToSize(receiptText, 185);
+            doc.text(receiptLines, 12, receiptY + 10);
+
+            doc.setFont("Times", "bold");
+            doc.setFontSize(12);
+            doc.text(totalFormatted, 152.5, receiptY + 28, { align: "center" });
+            doc.text(payee, 152.5, receiptY + 58, { align: "center" });
+
+            doc.setFont("Times", "normal");
+            doc.setFontSize(8);
+            doc.text("Signature over Printed Name", 152.5, receiptY + 64, { align: "center" });
+            doc.text("of Payee", 152.5, receiptY + 68, { align: "center" });
+            doc.text(`Date: ${date}`, 152.5, receiptY + 72, { align: "center" });
+
+            // Save the PDF
+            doc.save(`voucher_${dv_no.replace(/[/\\]/g, "-")}.pdf`);
+        }
+
+        // Form handling
+        document.getElementById('voucherForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const voucherData = {
+                payee: formData.get('payee'),
+                address: formData.get('address'),
+                dv_no: formData.get('dv_no') || 'SO-25-001',
+                mode: formData.get('mode'),
+                charge: formData.get('charge'),
+                particulars: formData.get('particulars'),
+                authorized_rep: formData.get('authorized_rep'),
+                approver: formData.get('approver'),
+                amount: parseFloat(formData.get('amount')),
+                apply_tax: formData.get('apply_tax') === 'on'
+            };
+
+            try {
+                generateVoucher(voucherData);
+                alert('✅ Voucher generated successfully!');
+            } catch (error) {
+                console.error('Error generating voucher:', error);
+                alert('❌ Error generating voucher. Please check the console for details.');
+            }
+        });
+
+        // Sample data loader
+        function loadSampleData() {
+            document.getElementById('payee').value = 'Maria Santos';
+            document.getElementById('address').value = '123 Rizal Street, Quezon City, Metro Manila 1100';
+            document.getElementById('dv_no').value = 'SO-25-002';
+            document.getElementById('mode').value = 'Check';
+            document.getElementById('charge').value = 'Office Supplies and Equipment';
+            document.getElementById('particulars').value = 'Purchase of computer equipment, office supplies, and educational materials for the mathematics program development project.';
+            document.getElementById('authorized_rep').value = 'Dr. Juan Dela Cruz';
+            document.getElementById('approver').value = 'Dr. Elena Rodriguez';
+            document.getElementById('amount').value = '15750.00';
+            document.getElementById('apply_tax').checked = true;
+            
+            // Add a subtle animation to show the form was filled
+            const form = document.getElementById('voucherForm');
+            form.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                form.style.transform = 'scale(1)';
+                form.style.transition = 'transform 0.3s ease';
+            }, 100);
+        }
+    </script>
+</body>
+</html>
