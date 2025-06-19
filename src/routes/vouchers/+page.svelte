@@ -19,14 +19,20 @@
       }
 
       $table_data.rows = [...$table_data.rows, toAdd]
-      console.log($table_data.rows)
     }
 
-    
+  function generateVouchers() {
+    console.log($table_data.rows)
+  }    
 
 </script>
 
-<button onclick={addRow} class="border p-2">add row</button>
+<div class="flex mb-5 gap-2 text-white">
+  <button onclick={addRow} class="bg-emerald-500 hover:bg-emerald-600">add row</button>
+  <button onclick={generateVouchers} class="bg-blue-500 hover:bg-blue-600">generate vouchers</button>
+</div>
+
+
 
 <table>
 <thead>

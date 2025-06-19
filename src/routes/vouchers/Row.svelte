@@ -29,32 +29,20 @@
 <tr>
     <td>{i}</td>
     {#each keys as key}
-        <td>
+        <td class="">
             <input 
                 type="text" 
                 class="underline-input" 
                 value={row[key]}
-                on:input={e => updateValue(key, e.target.value)}
+                oninput={e => updateValue(key, e.target.value)}
             />
         </td>
     {/each}
     <td>
-    <button on:click={deleteRow}>delete</button>
+        <button onclick={deleteRow} class="bg-red-500 hover:bg-red-600 text-white">delete</button>
     </td>
 </tr>
 
 <style>
-    tr, td {
-        border: 1px solid black;
-        padding: 1px;
-    }
 
-
-    .underline-input {
-        border: none;
-        border-bottom: 1px solid #333;
-        background: transparent;
-        outline: none;
-        width: 100%;
-    }
 </style>
