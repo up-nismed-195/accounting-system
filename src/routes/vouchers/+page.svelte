@@ -7,7 +7,7 @@
 
     function addRow() {
       let toAdd = {
-        "Project": 1,
+        "Project": Math.round(Math.random() * 100, 2),
         "Date": 1, 
         "DV No.": 1, 
         "Payee": 1, 
@@ -27,7 +27,6 @@
 </script>
 
 <button onclick={addRow} class="border p-2">add row</button>
-
 
 <table>
 <thead>
