@@ -1,45 +1,58 @@
-<script>
+<script lang="ts">
+	import { applyAction } from "$app/forms";
     import Row from "./Row.svelte";
-    import { table_data } from "./data.svelte";
+    import { rows } from "./data.svelte";
 
-    const headers = ["ID", "Project", "Date", "DV No.", "Payee", "Amount", 
-                    "Particular", "Gross", "Remarks", "Address", "Actions"]
+    const headers = [
+      "ID",
+      "payee",
+      "address",
+      "project",
+      "particulars",
+      "remarks",
+      "mode_of_payment",
+      "amount",
+      "less_tax",
+    ]
 
-    function addRow() {
-      let toAdd = {
-        "Project": 1,
-        "Date": 1, 
-        "DV No.": 1, 
-        "Payee": 1, 
-        "Amount": 1,      
-        "Particular": 1, 
-        "Gross": 1, 
-        "Remarks": 1, 
-        "Address": Math.round(Math.random() * 100, 2),
+    function generateRandomString(length: number) {
+      let string = ""
+      for (let i = 0; i < length; i++) {
+        string += String.fromCharCode(97+Math.floor(Math.random() * 26))
       }
 
-      $table_data.rows = [...$table_data.rows, toAdd]
-      console.log($table_data.rows)
+      return string
     }
 
-    
+    function addRow() {
+      let row: App.VoucherUI = {
+        payee: `${generateRandomString(6)}`,
+        address: "", 
+        project: "NISMED", 
+        particulars: "", 
+        remarks: "",
+        mode_of_payment: "",      
+        amount: Math.round(Math.random() * 100), 
+        less_tax: Math.round(Math.random() * 2) * 10, 
+      }
 
+      $rows = [...$rows, row]
+    }
 </script>
 
-<button onclick={addRow} class="border p-2">add row</button>
-
+<button onclick={addRow} class="">add row</button>
 
 <table>
 <thead>
-<tr>
-  {#each headers as header} 
-    <td class="p-2">{header}</td>
-  {/each}
-</tr>
+  <tr>
+    {#each headers as header} 
+      <td class="p-2">{header}</td>
+    {/each}
+  </tr>
 </thead>
 <tbody>
-    {#each $table_data.rows as row, i (i)}
-        <Row {row} {i} />
+    {#each $rows as row, index (index)}
+        <Row {row} {index} />
     {/each}
 </tbody>
 </table>

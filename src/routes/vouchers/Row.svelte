@@ -1,23 +1,26 @@
 <script lang="ts">
-  import { table_data } from './data.svelte.js';
+  import { rows } from './data.svelte.js';
 
-  export let row;
-  export let i: number;
+  export let row: App.VoucherUI;
+  export let index: number;
 
   function deleteRow() {
-    $table_data.rows = [
-      ...$table_data.rows.slice(0, i),
-      ...$table_data.rows.slice(i + 1)
+    $rows = [
+      ...$rows.slice(0, index),
+      ...$rows.slice(index + 1)
     ];
   }
+
+  let BASE = 23
+  let dv = (`${row.project}-${new Date().getFullYear().toString().slice(2)}-${BASE + index}`) 
 </script>
 
-<tr class="border">
-    <td>{i}</td>
+<tr class="">
+    <td>{dv}</td>
     {#each Object.values(row) as value}
         <td>{value}</td>
     {/each}
     <td>
-    <button on:click={deleteRow} class="border">delete</button>
+    <button on:click={deleteRow} class="">delete</button>
     </td>
 </tr>
