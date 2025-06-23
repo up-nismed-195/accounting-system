@@ -16,7 +16,7 @@ declare global {
 			tin_id_no: string,
 			remarks: string,
 			date: string,
-			amount: number,
+			gross: number,
 			less_tax: number,
 			project: string,
 			authorized_rep: string,
@@ -26,12 +26,25 @@ declare global {
 		interface VoucherUI extends Pick<Voucher, 
 			"payee" |
 			"address" | 
+			// "project" | 
+			"particulars" | 
+			"mode_of_payment" | 
+			"remarks" | 
+			"gross" | 
+			"less_tax"
+		> {}
+
+		interface VoucherPDF extends Pick<Voucher, 
+			"payee" |
+			"address" | 
 			"project" | 
 			"particulars" | 
 			"mode_of_payment" | 
 			"remarks" | 
-			"amount" | 
-			"less_tax"
+			"gross" | 
+			"less_tax" |
+			"authorized_rep" |
+			"approver"
 		> {}
 	}
 }
