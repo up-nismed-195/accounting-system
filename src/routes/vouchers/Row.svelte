@@ -67,3 +67,38 @@
     </td>
 </tr>
 
+<style>
+input, textarea {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 1em;
+  padding: 0.1em 0.2em;
+  color: #222;
+  resize: none;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  background: #f6f8fa;
+}
+
+td {
+  vertical-align: middle;
+}
+
+button {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 0.2em 0.7em;
+  font-size: 0.98em;
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+}
+
+button:hover {
+  background: #f6f8fa;
+  border-color: #b4b4b4;
+}
+</style>

@@ -76,7 +76,7 @@
   
   <span>project: </span>
   <select bind:value={selectedProject}>
-    <option value="" disabled selected>Select a projects</option>
+    <option value="" disabled selected>Select a project</option>
     {#each $projects as project}
       <option value={project}>{project}</option>
     {/each}
@@ -98,3 +98,85 @@
     {/each}
 </tbody>
 </table>
+
+<style>
+/* Container for controls */
+.controls {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 1rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+thead tr {
+  background: #f6f8fa;
+}
+
+th, td {
+  border: 1px solid #e0e0e0;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  min-width: 80px;
+  font-weight: 400;
+}
+
+th {
+  font-weight: 600;
+  color: #444;
+  background: #f6f8fa;
+}
+
+tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+tr:hover td {
+  background: #f0f4fa;
+}
+
+button {
+  background: #f6f8fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.35em 1.1em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+}
+
+button:hover {
+  background: #e0e7ef;
+  border-color: #b4b4b4;
+}
+
+input, select {
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 0.2em 0.5em;
+  font-size: 1em;
+  background: #fff;
+  transition: border 0.15s;
+}
+
+input:focus, select:focus {
+  border: 1.5px solid #1976d2;
+  outline: none;
+}
+
+label {
+  font-size: 0.98em;
+  color: #555;
+}
+</style>
