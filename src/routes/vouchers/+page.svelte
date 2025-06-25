@@ -1,10 +1,13 @@
 <script>
     import Row from "./Row.svelte";
     import { table_data } from "./data.svelte";
-    import { generateVoucher } from "./voucherGenerator.js";
     import { goto } from '$app/navigation';
+    import { generateVoucher } from "./voucherGenerator.js";
 
-    const headers = ["DV No.", "Payee", "Amount", "Address"];
+    // Updated headers (no Gross)
+    const headers = [
+        "DV No.", "Date", "Payee", "Amount", "Particular", "Remarks", "Address"
+    ];
 
     let selectedRows = [];
     let openMenuIndex = null;
@@ -39,11 +42,42 @@
             selectedRows = [...selectedRows, idx];
         }
     }
+
+    function generateSelectedPDFs() {
+        selectedRows.forEach(idx => {
+            const row = $table_data.rows[idx];
+            if (!row) return;
+            const converted = {
+                payee: row["Payee"]?.toString() ?? "",
+                address: row["Address"]?.toString() ?? "",
+                dv_no: row["DV No."] ?? "",
+                mode: row["Mode"]?.toString() ?? "",
+                charge: row["Amount"]?.toString() ?? "",
+                particulars: row["Particulars"]?.toString() ?? "",
+                authorized_rep: row["Authorized Rep"]?.toString() ?? "",
+                approver: row["Approver"]?.toString() ?? "",
+                amount: parseInt(row["Amount"]),
+                apply_tax: !!row["Apply Tax"]
+            };
+            generateVoucher(converted);
+        });
+    }
 </script>
 
 <div class="button-bar">
     <button on:click={addVoucher} class="main-btn add-btn">
         New
+    </button>
+    <button
+        class="main-btn generate-btn"
+        on:click={generateSelectedPDFs}
+        disabled={selectedRows.length === 0}
+    >
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;" viewBox="0 0 24 24">
+            <path d="M12 16v-8M8 12l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Generate Vouchers
     </button>
 </div>
 
@@ -98,6 +132,24 @@
     background: #059669;
     transform: translateY(-2px) scale(1.03);
 }
+.generate-btn {
+    background: #2563eb;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    gap: 0.5rem;
+}
+.generate-btn:disabled {
+    background: #a5b4fc;
+    color: #e0e7ff;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.generate-btn:not(:disabled):hover {
+    background: #1d4ed8;
+    transform: translateY(-2px) scale(1.03);
+}
 .table-scroll {
     width: 100%;
     overflow-x: auto;
@@ -108,7 +160,7 @@
     padding-bottom: 1rem;
 }
 .wide-table {
-    min-width: 800px; 
+    min-width: 1000px; 
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;

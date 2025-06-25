@@ -7,12 +7,11 @@ function getDefault() {
         rows: [{
             "Project": '1',
             "Date": '2', 
-            "No.": '3', 
+            "DV No.": '3', 
             "Payee": '4', 
             "Amount": '5',
             "Mode": '6',   
-            "Particulars": '7', 
-            "Gross": "8",
+            "Particulars": '7',
             "Remarks": '9', 
             "Address": '10',
             "Authorized Rep": '11',
@@ -34,7 +33,6 @@ function load() {
 
 export const table_data = writable(load());
 
-// Only subscribe to localStorage in the browser
 if (typeof window !== "undefined") {
     table_data.subscribe(value => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value));

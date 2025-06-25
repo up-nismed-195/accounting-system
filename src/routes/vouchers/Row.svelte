@@ -42,14 +42,6 @@
         if (showActions) setOpenMenu(null);
     }
 
-    function getYearShort(dateStr: string) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        return d.getFullYear().toString().slice(-2);
-    }
-    $: dv_no = `${row['Project'] || 'PRJ'}-${getYearShort(row['Date']) || 'YY'}-${row['DV No.'] || 'XXX'}`;
-
     function deleteRow() {
         $table_data.rows = [
             ...$table_data.rows.slice(0, i),
@@ -61,7 +53,7 @@
         const converted = {
             payee: row["Payee"]?.toString() ?? "",
             address: row["Address"]?.toString() ?? "",
-            dv_no: dv_no,
+            dv_no: row["DV No."] ?? "",
             mode: row["Mode"]?.toString() ?? "",
             charge: row["Amount"]?.toString() ?? "",
             particulars: row["Particulars"]?.toString() ?? "",
@@ -88,10 +80,20 @@
     <td class="select-cell">
         <input type="checkbox" checked={selected} on:change={onSelectRow} />
     </td>
-    <td class="id-cell">{dv_no}</td>
-    <td class="data-cell">{row.Payee}</td>
-    <td class="data-cell">{row.Amount}</td>
-    <td class="data-cell">{row.Address}</td>
+    <td class="id-cell">{row["DV No."] || '-'}</td>
+    <td class="data-cell">{row["Date"]}</td>
+    <td class="data-cell">{row["Payee"]}</td>
+    <td class="data-cell">{row["Amount"]}</td>
+    <td class="data-cell">{row["Particulars"]}</td>
+    <td class="data-cell">
+        <input
+            class="remarks-input"
+            type="text"
+            bind:value={row["Remarks"]}
+            on:click|stopPropagation
+        />
+    </td>
+    <td class="data-cell">{row["Address"]}</td>
     <td class="action-cell" style="position:relative;">
         <button class="pen-btn" bind:this={penBtn} on:click={toggleActions} title="Show actions">
             <svg class="pen-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,11 +149,24 @@
     .data-cell {
         padding: 12px 16px;
         vertical-align: middle;
-        min-width: 140px;
+        min-width: 120px;
         max-width: 220px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+    .remarks-input {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 1rem;
+        background: #fff;
+        color: #374151;
+    }
+    .remarks-input:focus {
+        outline: 2px solid #2563eb;
+        border-color: #2563eb;
     }
     .action-cell {
         min-width: 60px;
