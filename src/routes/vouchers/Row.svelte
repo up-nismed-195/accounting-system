@@ -4,14 +4,14 @@
 
     export let row;
     export let i;
+    export let headers;
+    export let selected = false;
+    export let onSelectRow = () => {};
 
-    // Modal state
     let showModal = false;
     let modalKey = '';
     let modalValue = '';
 
-    // helpers
-    const keys = Object.keys(row);
     let dv_no = `${row['Project']}-${row['Date']}-${row['No.']}`;
 
     function deleteRow() {
@@ -33,7 +33,7 @@
             address: row["Address"]?.toString() ?? "",
             dv_no: dv_no,
             mode: row["Mode"]?.toString() ?? "",
-            charge: row["Gross"]?.toString() ?? "",
+            charge: row["Amount"]?.toString() ?? "",
             particulars: row["Particulars"]?.toString() ?? "",
             authorized_rep: row["Authorized Rep"]?.toString() ?? "",
             approver: row["Approver"]?.toString() ?? "",
@@ -56,57 +56,62 @@
 </script>
 
 <tr class="table-row">
+    <td class="select-cell">
+        <input type="checkbox" checked={selected} on:change={onSelectRow} />
+    </td>
     <td class="id-cell">{dv_no}</td>
-    {#each keys as key}
-        <td class="data-cell">
-            {#if key === "Apply Tax"}
-                <label class="checkbox-wrapper">
+    {#each headers as key}
+        {#if key !== "ID" && key !== "Actions"}
+            <td class="data-cell {key.toLowerCase().replace(' ', '-')}">
+                {#if key === "Apply Tax"}
+                    <label class="checkbox-wrapper">
+                        <input
+                            type="checkbox"
+                            class="checkbox-input"
+                            checked={row[key]}
+                            on:change={e => updateValue(key, e.target.checked)}
+                        />
+                        <span class="checkbox-custom"></span>
+                    </label>
+                {:else if key === "Particulars" || key === "Address"}
+                    <button class="text-btn" on:click={() => openModal(key)}>
+                        <span class="text-content">
+                            {row[key] ? row[key].slice(0, 30) + (row[key].length > 30 ? '...' : '') : 'Click to edit'}
+                        </span>
+                        <svg class="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </button>
+                {:else if key === "Date"}
                     <input
-                        type="checkbox"
-                        class="checkbox-input"
-                        checked={row[key]}
-                        on:change={e => updateValue(key, e.target.checked)}
+                        type="date"
+                        class="text-input"
+                        value={row[key]}
+                        on:input={e => updateValue(key, e.target.value)}
                     />
-                    <span class="checkbox-custom"></span>
-                </label>
-            {:else if key === "Particulars" || key === "Address"}
-                <button class="text-btn" on:click={() => openModal(key)}>
-                    <span class="text-content">
-                        {row[key] ? row[key].slice(0, 30) + (row[key].length > 30 ? '...' : '') : 'Click to edit'}
-                    </span>
-                    <svg class="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                </button>
-            {:else if key === "Date"}
-                <input
-                    type="date"
-                    class="text-input"
-                    value={row[key]}
-                    on:input={e => updateValue(key, e.target.value)}
-                />
-            {:else if key === "Mode"}
-                <select
-                    class="select-input"
-                    value={row[key]}
-                    on:change={e => updateValue(key, e.target.value)}
-                >
-                    <option value="">Select Payment Mode</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Check">Check</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Other">Other</option>
-                </select>
-            {:else}
-                <input 
-                    type="text" 
-                    class="text-input"
-                    value={row[key]}
-                    on:input={e => updateValue(key, e.target.value)}
-                    placeholder="Enter value"
-                />
-            {/if}
-        </td>
+                {:else if key === "Mode"}
+                    <select
+                        class="select-input"
+                        value={row[key]}
+                        on:change={e => updateValue(key, e.target.value)}
+                    >
+                        <option value="">Select Payment Mode</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Check">Check</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                {:else}
+                    <input 
+                        type="text" 
+                        class="text-input"
+                        value={row[key]}
+                        on:input={e => updateValue(key, e.target.value)}
+                        placeholder="Enter value"
+                    />
+                {/if}
+            </td>
+        {/if}
     {/each}
     <td class="action-cell">
         <div class="action-buttons">
@@ -154,6 +159,10 @@
 {/if}
 
 <style>
+    .select-cell {
+        width: 40px;
+        text-align: center;
+    }
     .table-row {
         border-bottom: 1px solid #e5e7eb;
         transition: background-color 0.15s ease;
@@ -162,15 +171,15 @@
         background-color: #f9fafb;
     }
     .id-cell {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
         color: white;
         font-weight: 600;
         font-size: 1rem;
-        padding: 18px 24px;
+        padding: 10px 16px;
         text-align: center;
         border-radius: 8px;
         letter-spacing: 0.5px;
-        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
+        box-shadow: 0 2px 4px rgba(34, 197, 94, 0.15);
         border: none;
         font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
         min-width: 90px;
@@ -178,11 +187,24 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        white-space: nowrap;
+        overflow-x: auto;
+        max-width: 220px;
     }
     .data-cell {
         padding: 12px 16px;
         vertical-align: middle;
         min-width: 140px;
+    }
+    .data-cell.apply-tax {
+        min-width: 100px;
+        width: 100px;
+    }
+    .action-cell {
+        min-width: 120px;
+        width: 120px;
+        padding: 8px 8px;
+        vertical-align: middle;
     }
     .text-input, .select-input {
         width: 100%;
@@ -195,11 +217,11 @@
     }
     .text-input:focus, .select-input:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
     }
     .text-input:hover, .select-input:hover {
-        border-color: #9ca3af;
+        border-color: #16a34a;
     }
     .text-btn {
         width: 100%;
@@ -218,7 +240,7 @@
     }
     .text-btn:hover {
         background: #f1f5f9;
-        border-color: #cbd5e1;
+        border-color: #bbf7d0;
     }
     .text-content {
         color: #475569;
@@ -254,8 +276,8 @@
         position: relative;
     }
     .checkbox-input:checked + .checkbox-custom {
-        background: #3b82f6;
-        border-color: #3b82f6;
+        background: #22c55e;
+        border-color: #22c55e;
     }
     .checkbox-input:checked + .checkbox-custom::after {
         content: '';
@@ -269,29 +291,30 @@
         transform: rotate(45deg);
     }
     .checkbox-wrapper:hover .checkbox-custom {
-        border-color: #9ca3af;
-    }
-    .action-cell {
-        padding: 12px 16px;
-        vertical-align: middle;
+        border-color: #16a34a;
     }
     .action-buttons {
         display: flex;
-        gap: 8px;
+        flex-direction: column;
+        gap: 6px;
         align-items: center;
     }
     .action-btn {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        border-radius: 6px;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 5px;
         font-weight: 500;
-        font-size: 0.875rem;
+        font-size: 0.78rem;
         border: none;
         cursor: pointer;
         transition: all 0.15s ease;
         white-space: nowrap;
+        min-height: 24px;
+        width: 90px;
+        max-width: 100px;
+        justify-content: center;
     }
     .btn-icon {
         width: 16px;
@@ -299,13 +322,13 @@
         flex-shrink: 0;
     }
     .primary-btn {
-        background: #3b82f6;
+        background: #22c55e;
         color: white;
     }
     .primary-btn:hover {
-        background: #2563eb;
+        background: #16a34a;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
+        box-shadow: 0 4px 8px rgba(34, 197, 94, 0.25);
     }
     .danger-btn {
         background: #ef4444;
@@ -385,8 +408,8 @@
     }
     .modal-textarea:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
     }
     .modal-footer {
         display: flex;
@@ -415,12 +438,10 @@
         border-color: #9ca3af;
     }
     .modal-btn.primary-btn {
-        background: #3b82f6;
+        background: #22c55e;
         color: white;
     }
     .modal-btn.primary-btn:hover {
-        background: #2563eb;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
+        background: #16a34a;
     }
 </style>

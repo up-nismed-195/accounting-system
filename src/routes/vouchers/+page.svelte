@@ -1,10 +1,11 @@
 <script>
     import Row from "./Row.svelte";
     import { table_data } from "./data.svelte";
+    import { generateVoucher } from "./voucherGenerator.js";
 
     const headers = [
         "ID", "Project", "Date", "No.", "Payee", "Amount", "Mode",
-        "Particulars", "Gross", "Remarks", "Address", "Authorized Rep", "Approver", 
+        "Particulars", "Remarks", "Address", "Authorized Rep", "Approver", 
         "Apply Tax", "Actions"
     ];
 
@@ -17,7 +18,6 @@
         "Amount": "Amount",
         "Mode": "Payment Mode",
         "Particulars": "Particulars",
-        "Gross": "Gross",
         "Remarks": "Remarks",
         "Address": "Address",
         "Authorized Rep": "Authorized Rep",
@@ -25,6 +25,8 @@
         "Apply Tax": "Apply Tax",
         "Actions": "Actions"
     };
+
+    let selectedRows = [];
 
     function addRow() {
         let toAdd = {
@@ -35,7 +37,6 @@
             "Amount": '',
             "Mode": '',   
             "Particulars": '', 
-            "Gross": "",
             "Remarks": '', 
             "Address": '',
             "Authorized Rep": '',
@@ -45,16 +46,40 @@
         $table_data.rows = [...$table_data.rows, toAdd];
     }
 
+    function handleSelectRow(idx) {
+        if (selectedRows.includes(idx)) {
+            selectedRows = selectedRows.filter(i => i !== idx);
+        } else {
+            selectedRows = [...selectedRows, idx];
+        }
+    }
+
     function generateVouchers() {
-        console.log($table_data.rows);
-    }    
+        selectedRows.forEach(idx => {
+            const row = $table_data.rows[idx];
+            const dv_no = `${row['Project']}-${row['Date']}-${row['No.']}`;
+            const converted = {
+                payee: row["Payee"]?.toString() ?? "",
+                address: row["Address"]?.toString() ?? "",
+                dv_no: dv_no,
+                mode: row["Mode"]?.toString() ?? "",
+                charge: row["Amount"]?.toString() ?? "",
+                particulars: row["Particulars"]?.toString() ?? "",
+                authorized_rep: row["Authorized Rep"]?.toString() ?? "",
+                approver: row["Approver"]?.toString() ?? "",
+                amount: parseInt(row["Amount"]),
+                apply_tax: !!row["Apply Tax"]
+            }
+            generateVoucher(converted);
+        });
+    }
 </script>
 
 <div class="button-bar">
     <button on:click={addRow} class="main-btn add-btn">
         Add Row
     </button>
-    <button on:click={generateVouchers} class="main-btn gen-btn">
+    <button on:click={generateVouchers} class="main-btn gen-btn" disabled={selectedRows.length === 0}>
         Generate Vouchers
     </button>
 </div>
@@ -63,6 +88,7 @@
     <table class="wide-table">
         <thead>
             <tr>
+                <th class="header-cell"></th>
                 {#each headers as header} 
                     <th class="header-cell">{headerMap[header] ?? header}</th>
                 {/each}
@@ -70,7 +96,13 @@
         </thead>
         <tbody>
             {#each $table_data.rows as row, i (i)}
-                <Row {row} {i} />
+                <Row
+                    {row}
+                    {i}
+                    {headers}
+                    selected={selectedRows.includes(i)}
+                    on:selectRow={() => handleSelectRow(i)}
+                />
             {/each}
         </tbody>
     </table>
@@ -109,6 +141,10 @@
     background: #1d4ed8;
     transform: translateY(-2px) scale(1.03);
 }
+.gen-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 .table-scroll {
     width: 100%;
     overflow-x: auto;
@@ -118,7 +154,7 @@
     padding-bottom: 1rem;
 }
 .wide-table {
-    min-width: 1400px;
+    min-width: 2000px; 
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;

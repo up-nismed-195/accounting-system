@@ -6,41 +6,32 @@
 </script>
 
 <div class="layout-root">
-  <aside class="sidebar">
-    <span class="text-lg mb-2">
-      Menu
-    </span>   
-    <nav class="w-full text-sm flex flex-col gap-1">
+  <header class="navbar">
+    <img src="/nismed.png" alt="NISMED Logo" class="logo" />
+    <nav class="nav-menu">
       {#each [
-        {name: "Dashboard", link: "/"},
+        {name: "Dashboard", link: "/dashboard"},
         {name: "Vouchers", link: "/vouchers"},
         {name: "Projects", link: "/projects"},
         {name: "History", link: "/history"},
         {name: "Reports", link: "/reports"},
       ] as item}
-      <a href={item.link} class="block w-full py-3 px-5 rounded-full 
-        {page.url.pathname === item.link ? "bg-secondary/50 text-nismed" : "hover:bg-gray-200/60"}">
+      <a href={item.link} class="nav-link {page.url.pathname === item.link ? 'active' : ''}">
         {item.name}
       </a>
       {/each}
     </nav>
-
-    <span class="text-lg font-bold mt-4 py-2 border-t border-display/30">
-      Help
-    </span>
-
-    <nav class="w-full text-sm flex flex-col gap-1">
+    <div class="nav-spacer"></div>
+    <nav class="nav-help">
       {#each [
         {name: "How to use", link: "/how-to-use"},
         {name: "People", link: "/people"},
         {name: "About", link: "/about"},
       ] as item}
-      <a href={item.link} class="block w-full py-3 px-5 rounded-full {page.url.pathname === item.link ? "bg-secondary/50" : "hover:bg-gray-200/80"}">        
-        {item.name}
-      </a>
+      <a href={item.link} class="nav-link">{item.name}</a>
       {/each}
     </nav>
-  </aside>
+  </header>
   <main class="main-content">
     {@render children()}
   </main>
@@ -49,29 +40,64 @@
 <style>
 .layout-root {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
-}
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 12rem; 
-  height: 100vh;
-  background: #f1f5f2;
-  z-index: 10;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
-  padding: 1rem;
-  display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden; /* Prevents horizontal scroll */
+}
+.navbar {
+  display: flex;
+  align-items: center;
+  background: #f1f5f2;
+  padding: 0 1rem;
+  height: 4.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  z-index: 10;
+}
+.logo {
+  height: 3.2rem;
+  width: 3.2rem;
+  margin-right: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 0.35rem;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.nav-menu {
+  display: flex;
+  gap: 1rem;
+}
+.nav-spacer {
+  flex: 1;
+}
+.nav-help {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto; /* Pushes nav-help to the rightmost */
+}
+.nav-link {
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #222;
+  font-weight: 500;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.nav-link.active, .nav-link:hover {
+  background: #e0e7ef;
+  color: #2563eb;
 }
 .main-content {
-  margin-left: 12rem; 
-  width: calc(100vw - 12rem);
-  height: 100vh;
-  overflow-x: auto;
+  flex: 1;
   overflow-y: auto;
-  padding: 2.5rem 2.5rem 2.5rem 0;
+  overflow-x: hidden; /* Prevents horizontal scroll */
+  padding: 2.5rem;
   box-sizing: border-box;
+  background: #f8fafc;
 }
 </style>
