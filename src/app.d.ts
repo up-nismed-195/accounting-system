@@ -28,6 +28,7 @@ declare global {
 		amount_taxed: number,
 		net_amount: number,
 		remarks: string,
+		payee_name: string
 	}
 
 	interface LiquidationSummary {

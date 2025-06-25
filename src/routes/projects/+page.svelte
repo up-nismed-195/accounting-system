@@ -48,64 +48,57 @@
             loadLiquidations(selectedProject, sortBy, sortOrder)
         }
     })
-
-
-    // let projects: Project[] = data.projects ?? [];
-    // let liquidations: LiquidationEntry[] = data.liquidation ?? [];
 </script>
 
-<div class="flex justify-between items-center gap-5">
+<!-- HEADER -->
 
+<div class="flex justify-between items-center gap-5">
     <div class="flex justify-start items-center gap-5">
         <h1 class="text-4xl font-semibold">
-            <a href="#top">
-                View Project
-            </a>
+            <a href="#top">View Project</a>
         </h1>
 
-        {#if $projectsLoading}
-            <Spinner />
-        {:else} 
-            <select bind:value={selectedProject} id="countries" class=" bg-primary/10
-            text-sm rounded-lg border-2 border-primary hover:bg-primary/20
+        {#if $projectsLoading}<Spinner />{:else} 
+        <select bind:value={selectedProject} id="countries" class=" bg-primary/10
+        text-sm rounded-lg border-2 border-primary hover:bg-primary/20
+        appearance:none
+        py-2.5 pl-3">
+            {#each $projects as project}
+            <option class="" value={project.code}>{project.code}</option>
+            {/each}
+        </select>
+
+        <div class="-mx-2 py-3 text-black/30">•</div>
+
+        <div class="flex gap-2 items-center">
+            <select bind:value={sortBy} id="countries" class=" bg-secondary/10
+            text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
             appearance:none
-            py-2.5 px-3">
-                {#each $projects as project}
-                    <option class="" value={project.code}>{project.code}</option>
+            py-2.5 pl-3">
+                {#each [
+                    {value: "dv_no", title: "DV No."},
+                    {value: "payee_name", title: "Payee"},
+                    {value: "gross", title: "Gross Amount"},
+                    {value: "amount_taxed", title: "Tax"},
+                ] as {value, title}}
+                    <option class="" value={value}>Sort by {title}</option>
                 {/each}
             </select>
+        </div>
 
-            <div class="mx-0 py-3 text-black/30">•</div>
-
-            <div class="flex gap-2 items-center">
-                <select bind:value={sortBy} id="countries" class=" bg-secondary/10
-                text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
-                appearance:none
-                py-2.5 px-3">
-                    {#each [
-                        {value: "dv_no", title: "DV No."},
-                        {value: "payee_name", title: "Payee"},
-                        {value: "gross", title: "Gross Amount"},
-                        {value: "amount_taxed", title: "Tax"},
-                    ] as {value, title}}
-                        <option class="" value={value}>Sort by {title}</option>
-                    {/each}
-                </select>
-            </div>
-
-            <div class="flex gap-2 items-center">
-                <select bind:value={sortOrder} id="countries" class=" bg-secondary/10
-                text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
-                appearance:none
-                py-2.5 px-3">
-                    {#each [
-                        {value: "ascending", title: "Ascending"},
-                        {value: "descending", title: "Descending"},
-                    ] as {value, title}}
-                        <option class="" value={value}>{title}</option>
-                    {/each}
-                </select>
-            </div>
+        <div class="flex gap-2 items-center -ml-3">
+            <select bind:value={sortOrder} id="countries" class=" bg-secondary/10
+            text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
+            appearance:none
+            py-2.5 pl-3">
+                {#each [
+                    {value: "ascending", title: "Ascending"},
+                    {value: "descending", title: "Descending"},
+                ] as {value, title}}
+                    <option class="" value={value}>{title}</option>
+                {/each}
+            </select>
+        </div>
 
         {/if}    
     </div>
@@ -120,8 +113,70 @@
 
 <hr class="border-black/10 border-1 mt-3 mb-3 border-dashed">
 
+<!-- LIQUIDATION TABLE -->
+
 <div class="relative overflow-x-auto border border-black/15">
-    <table class="w-full text-sm text-left rtl:text-right text-black dark:text-gray-400">
+<table class="w-full text-sm text-left rtl:text-right text-black">
+<thead class="text-xs text-white bg-primary">
+<tr>
+    {#each [
+        "Payee",
+        "DV No.",
+        "Date",
+        "Particulars",
+        "TIN No.",
+        "Gross",
+        "Taxed",
+        "Net",
+        "Remarks"
+    ] as column}
+    <th scope="col" class="px-3 py-3">
+        {column}
+    </th>
+    {/each}
+    <th scope="col" class="px-3 py-3">
+        <span class="sr-only">Edit</span>
+    </th>
+</tr>
+</thead>
+<tbody>
+{#each $liquidations as liquidation}
+    <tr class=" border-b border-gray-200 hover:bg-gray-100 ">
+    {#each [
+        liquidation.payee_name,
+        liquidation.dv_no,
+        liquidation.voucher_date,
+        liquidation.particulars,
+        liquidation.tin_no,
+        liquidation.gross,
+        liquidation.amount_taxed,
+        liquidation.net_amount,
+        liquidation.remarks,
+    ] as entry}
+        <td class="px-2 py-4 max-w-[200px]">
+            {entry}
+        </td>
+    {/each}
+        <td class="px-5 py-4 text-right">
+            <a href="#" class="font-medium text-blue-600  hover:underline">Edit</a>
+        </td>
+    </tr>
+{/each}
+</tbody>
+</table>
+</div>
+
+
+
+<!-- ALL PROJECTS -->
+
+<h1 class="text-3xl font-semibold mt-9">All Projects</h1>
+<hr class="border-black/20 border-1 mt-3 mb-3 border-dashed">
+
+<!-- PROJECTS TABLE -->
+
+<div class="relative overflow-x-auto border border-black/15">
+    <table class="w-full text-sm text-left rtl:text-right text-black">
         <thead class="text-xs text-white bg-primary">
             <tr>
                 <th scope="col" class="px-6 py-3">
@@ -131,10 +186,10 @@
                     Project
                 </th>
                 <th scope="col" class="px-6 py-3">
-                    Category
+                    Total   
                 </th>
                 <th scope="col" class="px-6 py-3">
-                    Price
+                    Actions
                 </th>
                 <th scope="col" class="px-6 py-3">
                     <span class="sr-only">Edit</span>
@@ -142,10 +197,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
+                <td scope="row" class="px-6 py-4 text-gray-900 whitespace-nowrap ">
                     Apple MacBook Pro 17"
-                </th>
+                </td>
                 <td class="px-6 py-4">
                     Silver
                 </td>
@@ -156,60 +211,7 @@
                     $2999
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-
-<h1 class="text-3xl font-semibold mt-9">All Projects</h1>
-<hr class="border-black/20 border-1 mt-3 mb-3 border-dashed">
-
-<div class="relative overflow-x-auto border border-black/15">
-    <table class="w-full text-sm text-left rtl:text-right text-black dark:text-gray-400">
-        <thead class="text-xs text-white bg-primary">
-            <tr>
-                <th scope="col" class="px-6 py-3">
-                    Project Code
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Project Name
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Category
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Price
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    <span class="sr-only">Edit</span>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each $projects as project}
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <td>{project.code}</td>
-                <td>{project.name}</td>
-            </tr>
-            {/each}
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    Project Code
-                </th>
-                <td class="px-6 py-4">
-                    Project Name
-                </td>
-                <td class="px-6 py-4">
-                    Laptop
-                </td>
-                <td class="px-6 py-4">
-                    $2999
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                    <a href="#" class="font-medium text-blue-600  hover:underline">Edit</a>
                 </td>
             </tr>
         </tbody>
