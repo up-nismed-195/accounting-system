@@ -4,30 +4,14 @@
     import { generateVoucher } from "./voucherGenerator.js";
     import { goto } from '$app/navigation';
 
-    const headers = [
-        "ID", "Project", "Date", "DV No.", "Payee", "Amount", "Mode",
-        "Particulars", "Remarks", "Address", "Authorized Rep", "Approver", 
-        "Apply Tax", "Actions"
-    ];
-
-    const headerMap = {
-        "ID": "ID",
-        "Project": "Project",
-        "Date": "Date",
-        "DV No.": "DV No.",
-        "Payee": "Payee",
-        "Amount": "Amount",
-        "Mode": "Payment Mode",
-        "Particulars": "Particulars",
-        "Remarks": "Remarks",
-        "Address": "Address",
-        "Authorized Rep": "Authorized Rep",
-        "Approver": "Approver",
-        "Apply Tax": "Apply Tax",
-        "Actions": "Actions"
-    };
+    const headers = ["DV No.", "Payee", "Amount", "Address"];
 
     let selectedRows = [];
+    let openMenuIndex = null;
+
+    function setOpenMenu(idx) {
+        openMenuIndex = idx;
+    }
 
     function addVoucher() {
         let toAdd = {
@@ -55,34 +39,11 @@
             selectedRows = [...selectedRows, idx];
         }
     }
-
-    function generateVouchers() {
-        selectedRows.forEach(idx => {
-            const row = $table_data.rows[idx];
-            const dv_no = `${row['Project']}-${row['Date']}-${row['No.']}`;
-            const converted = {
-                payee: row["Payee"]?.toString() ?? "",
-                address: row["Address"]?.toString() ?? "",
-                dv_no: dv_no,
-                mode: row["Mode"]?.toString() ?? "",
-                charge: row["Amount"]?.toString() ?? "",
-                particulars: row["Particulars"]?.toString() ?? "",
-                authorized_rep: row["Authorized Rep"]?.toString() ?? "",
-                approver: row["Approver"]?.toString() ?? "",
-                amount: parseInt(row["Amount"]),
-                apply_tax: !!row["Apply Tax"]
-            }
-            generateVoucher(converted);
-        });
-    }
 </script>
 
 <div class="button-bar">
     <button on:click={addVoucher} class="main-btn add-btn">
         New
-    </button>
-    <button on:click={generateVouchers} class="main-btn gen-btn" disabled={selectedRows.length === 0}>
-        Generate Vouchers
     </button>
 </div>
 
@@ -92,8 +53,9 @@
             <tr>
                 <th class="header-cell"></th>
                 {#each headers as header} 
-                    <th class="header-cell">{headerMap[header] ?? header}</th>
+                    <th class="header-cell">{header}</th>
                 {/each}
+                <th class="header-cell" style="width:60px"></th>
             </tr>
         </thead>
         <tbody>
@@ -101,9 +63,10 @@
                 <Row
                     {row}
                     {i}
-                    {headers}
                     selected={selectedRows.includes(i)}
-                    on:selectRow={() => handleSelectRow(i)}
+                    onSelectRow={() => handleSelectRow(i)}
+                    openMenuIndex={openMenuIndex}
+                    setOpenMenu={setOpenMenu}
                 />
             {/each}
         </tbody>
@@ -135,28 +98,17 @@
     background: #059669;
     transform: translateY(-2px) scale(1.03);
 }
-.gen-btn {
-    background: #2563eb;
-    color: #fff;
-}
-.gen-btn:hover {
-    background: #1d4ed8;
-    transform: translateY(-2px) scale(1.03);
-}
-.gen-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
 .table-scroll {
     width: 100%;
     overflow-x: auto;
+    overflow-y: visible;
     background: #f8fafc;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(59,130,246,0.04);
     padding-bottom: 1rem;
 }
 .wide-table {
-    min-width: 2000px; 
+    min-width: 800px; 
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;

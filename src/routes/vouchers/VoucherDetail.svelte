@@ -27,8 +27,8 @@
         <input type="date" bind:value={voucher.Date} on:input={e => updateField('Date', e.target.value)} />
     </div>
     <div class="form-row">
-        <label>No.</label>
-        <input type="text" bind:value={voucher.No} on:input={e => updateField('No.', e.target.value)} />
+        <label>DV No.</label>
+        <input type="text" bind:value={voucher['DV No.']} on:input={e => updateField('DV No.', e.target.value)} />
     </div>
     <div class="form-row">
         <label>Payee</label>
@@ -39,7 +39,7 @@
         <input type="number" bind:value={voucher.Amount} on:input={e => updateField('Amount', e.target.value)} />
     </div>
     <div class="form-row">
-        <label>Mode</label>
+        <label>Payment Mode</label>
         <select bind:value={voucher.Mode} on:change={e => updateField('Mode', e.target.value)}>
             <option value="">Select Payment Mode</option>
             <option value="Cash">Cash</option>
