@@ -5,7 +5,7 @@
   let { children } = $props();
 </script>
 
-<div class="layout-root">
+<div class="layout-root font-display">
   <header class="navbar">
     <img src="/nismed.png" alt="NISMED Logo" class="logo" />
     <nav class="nav-menu">
@@ -32,7 +32,7 @@
       {/each}
     </nav>
   </header>
-  <main class="main-content">
+  <main class="main-content font-display">
     {@render children()}
   </main>
 </div>
@@ -96,7 +96,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; /* Prevents horizontal scroll */
-  padding: 2.5rem;
+  padding: 2.5rem 7.5rem;
   box-sizing: border-box;
   background: #f8fafc;
 }

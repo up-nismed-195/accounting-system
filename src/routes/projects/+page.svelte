@@ -1,51 +1,60 @@
-<script>
-    // Example projects array; replace with your data source or fetch from backend
-    let projects = [
-        { id: 'project-1', name: 'Project Alpha' },
-        { id: 'project-2', name: 'Project Beta' },
-        { id: 'project-3', name: 'Project Gamma' }
-    ];
+<script lang="ts">
+	import { onMount } from 'svelte';
+    import { supabase } from '$lib/supabaseClient.js';
+
+    const loadProjects = async (): Promise<Project[]> => {
+        let { data: projects } = await supabase.from("project").select("code,name");
+        return projects ?? []
+    }
+
+    // let projects: Project[] = data.projects ?? [];
+    // let liquidations: LiquidationEntry[] = data.liquidation ?? [];
 </script>
 
-<h1 class="title">Projects</h1>
-<ul class="project-list">
-    {#each projects as project}
-        <li>
-            <a class="project-link" href={`/projects/${project.id}`}>
-                <span class="folder-icon">📁</span>
-                {project.name}
+<div class="flex justify-between items-center gap-5">
+    <!-- <h1 class="text-3xl font-semibold underline underline-offset-2 decoration-primary/75 hover:decoration-secondary/75"> -->
+
+    <div class="flex justify-start items-center gap-4">
+        <h1 class="text-3xl font-semibold">
+            <a href="#top">
+                Project
             </a>
-        </li>
-    {/each}
-</ul>
+        </h1>
+
+        {#await loadProjects()}
+            Loading...
+        {:then projects} 
+            <form class="">
+                <select id="countries" class="font-bold bg-primary/10
+                text-sm rounded-lg border-2 border-primary focus:ring-secondary focus:border-secondary
+               
+                appearance:none
+                py-2.5 px-3">
+                    {#each projects as project}
+                        <option class="" value={project.code}>{project.code}</option>
+                    {/each}
+                </select>
+            </form>
+        {/await}    
+        
+        
+    </div>
+
+    <button type="button" class="border text-white bg-blue-700 hover:bg-blue-800
+        focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+        Generate Liquidation Report
+    </button>
+</div>
+
+<hr class="border-black/15 my-3">
 
 <style>
-.title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-}
-.project-list {
-    list-style: none;
-    padding: 0;
-}
-.project-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    background: #f0fdf4;
-    color: #166534;
-    text-decoration: none;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    transition: background 0.15s;
-}
-.project-link:hover {
-    background: #bbf7d0;
-}
-.folder-icon {
-    font-size: 1.3rem;
-}
+    select {
+        outline: 0;
+    }
+    option {
+        text-decoration: italic;
+    }
 </style>
+
+

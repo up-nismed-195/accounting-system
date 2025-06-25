@@ -3,10 +3,9 @@
 
 @theme {
   --font-display: "Inter", monospace; 
-  --color-nismed: #106635;
-  --color-secondary: #B4D4C2;
-  --color-tertiary: #EBF6EF;
-  --color-display: #49454F;
+  --color-primary: #106635;
+  --color-secondary: #2563eb;
+  --color-accent: #73a9c3;
 }
 
 
