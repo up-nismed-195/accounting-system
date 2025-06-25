@@ -39,6 +39,8 @@
         if ($projects && $projects.length > 0 && !selectedProject) {
             selectedProject = $projects[0].code
         }
+
+        console.log($projects)
     })
 
     $effect(() => { 
@@ -53,30 +55,31 @@
 </script>
 
 <div class="flex justify-between items-center gap-5">
-    <!-- <h1 class="text-3xl font-semibold underline underline-offset-2 decoration-primary/75 hover:decoration-secondary/75"> -->
 
-    <div class="flex justify-start items-center gap-4">
-        <h1 class="text-3xl font-semibold">
+    <div class="flex justify-start items-center gap-5">
+        <h1 class="text-4xl font-semibold">
             <a href="#top">
-                Project
+                View Project
             </a>
         </h1>
 
         {#if $projectsLoading}
             <Spinner />
         {:else} 
-            <select bind:value={selectedProject} id="countries" class="font-bold bg-primary/10
-            text-sm rounded-lg border-2 border-primary    
+            <select bind:value={selectedProject} id="countries" class=" bg-primary/10
+            text-sm rounded-lg border-2 border-primary hover:bg-primary/20
             appearance:none
             py-2.5 px-3">
                 {#each $projects as project}
                     <option class="" value={project.code}>{project.code}</option>
                 {/each}
-            </select>   
-            <div class="mx-1 border-1 py-3 border-black/10"></div>
+            </select>
+
+            <div class="mx-0 py-3 text-black/30">•</div>
+
             <div class="flex gap-2 items-center">
                 <select bind:value={sortBy} id="countries" class=" bg-secondary/10
-                text-sm rounded-lg border-2 border-secondary
+                text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
                 appearance:none
                 py-2.5 px-3">
                     {#each [
@@ -92,7 +95,7 @@
 
             <div class="flex gap-2 items-center">
                 <select bind:value={sortOrder} id="countries" class=" bg-secondary/10
-                text-sm rounded-lg border-2 border-secondary
+                text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
                 appearance:none
                 py-2.5 px-3">
                     {#each [
@@ -115,17 +118,17 @@
     </div>
 </div>
 
-<hr class="border-black/15 my-5">
+<hr class="border-black/10 border-1 mt-3 mb-3 border-dashed">
 
-<div class="relative overflow-x-auto border-3 border-black/15">
-    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+<div class="relative overflow-x-auto border border-black/15">
+    <table class="w-full text-sm text-left rtl:text-right text-black dark:text-gray-400">
         <thead class="text-xs text-white bg-primary">
             <tr>
                 <th scope="col" class="px-6 py-3">
-                    Product name
+                    Project Code
                 </th>
                 <th scope="col" class="px-6 py-3">
-                    Color
+                    Project
                 </th>
                 <th scope="col" class="px-6 py-3">
                     Category
@@ -156,35 +159,54 @@
                     <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
                 </td>
             </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<h1 class="text-3xl font-semibold mt-9">All Projects</h1>
+<hr class="border-black/20 border-1 mt-3 mb-3 border-dashed">
+
+<div class="relative overflow-x-auto border border-black/15">
+    <table class="w-full text-sm text-left rtl:text-right text-black dark:text-gray-400">
+        <thead class="text-xs text-white bg-primary">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    Project Code
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Project Name
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Category
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Price
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    <span class="sr-only">Edit</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each $projects as project}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td>{project.code}</td>
+                <td>{project.name}</td>
+            </tr>
+            {/each}
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    Microsoft Surface Pro
+                    Project Code
                 </th>
                 <td class="px-6 py-4">
-                    White
+                    Project Name
                 </td>
                 <td class="px-6 py-4">
-                    Laptop PC
+                    Laptop
                 </td>
                 <td class="px-6 py-4">
-                    $1999
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                </td>
-            </tr>
-            <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    Magic Mouse 2
-                </th>
-                <td class="px-6 py-4">
-                    Black
-                </td>
-                <td class="px-6 py-4">
-                    Accessories
-                </td>
-                <td class="px-6 py-4">
-                    $99
+                    $2999
                 </td>
                 <td class="px-6 py-4 text-right">
                     <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
@@ -193,10 +215,6 @@
         </tbody>
     </table>
 </div>
-
-
-<h1 class="text-3xl font-semibold my-7">All Projects</h1>
-<hr class="border-black/15 my-5">
 
 <style>
     select {
