@@ -2,9 +2,10 @@
     import Row from "./Row.svelte";
     import { table_data } from "./data.svelte";
     import { generateVoucher } from "./voucherGenerator.js";
+    import { goto } from '$app/navigation';
 
     const headers = [
-        "ID", "Project", "Date", "No.", "Payee", "Amount", "Mode",
+        "ID", "Project", "Date", "DV No.", "Payee", "Amount", "Mode",
         "Particulars", "Remarks", "Address", "Authorized Rep", "Approver", 
         "Apply Tax", "Actions"
     ];
@@ -13,7 +14,7 @@
         "ID": "ID",
         "Project": "Project",
         "Date": "Date",
-        "No.": "No.",
+        "DV No.": "DV No.",
         "Payee": "Payee",
         "Amount": "Amount",
         "Mode": "Payment Mode",
@@ -28,11 +29,11 @@
 
     let selectedRows = [];
 
-    function addRow() {
+    function addVoucher() {
         let toAdd = {
             "Project": '',
             "Date": '', 
-            "No.": '', 
+            "DV No.": '', 
             "Payee": '', 
             "Amount": '',
             "Mode": '',   
@@ -44,6 +45,7 @@
             "Apply Tax": false,
         };
         $table_data.rows = [...$table_data.rows, toAdd];
+        goto(`/vouchers/${$table_data.rows.length - 1}`);
     }
 
     function handleSelectRow(idx) {
@@ -76,8 +78,8 @@
 </script>
 
 <div class="button-bar">
-    <button on:click={addRow} class="main-btn add-btn">
-        Add Row
+    <button on:click={addVoucher} class="main-btn add-btn">
+        New
     </button>
     <button on:click={generateVouchers} class="main-btn gen-btn" disabled={selectedRows.length === 0}>
         Generate Vouchers

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { table_data } from './data.svelte.js';
     import { generateVoucher } from './voucherGenerator.js';
+    import { goto } from '$app/navigation';
 
     export let row;
     export let i;
@@ -12,7 +13,16 @@
     let modalKey = '';
     let modalValue = '';
 
-    let dv_no = `${row['Project']}-${row['Date']}-${row['No.']}`;
+    // Helper to get last two digits of year from Date
+    function getYearShort(dateStr: string) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        return d.getFullYear().toString().slice(-2);
+    }
+
+    // Compose DV No. as PROJECT-YY-NO
+    $: dv_no = `${row['Project'] || 'PRJ'}-${getYearShort(row['Date']) || 'YY'}-${row['DV No.'] || 'XXX'}`;
 
     function deleteRow() {
         $table_data.rows = [
@@ -62,55 +72,67 @@
     <td class="id-cell">{dv_no}</td>
     {#each headers as key}
         {#if key !== "ID" && key !== "Actions"}
-            <td class="data-cell {key.toLowerCase().replace(' ', '-')}">
-                {#if key === "Apply Tax"}
-                    <label class="checkbox-wrapper">
-                        <input
-                            type="checkbox"
-                            class="checkbox-input"
-                            checked={row[key]}
-                            on:change={e => updateValue(key, e.target.checked)}
-                        />
-                        <span class="checkbox-custom"></span>
-                    </label>
-                {:else if key === "Particulars" || key === "Address"}
-                    <button class="text-btn" on:click={() => openModal(key)}>
-                        <span class="text-content">
-                            {row[key] ? row[key].slice(0, 30) + (row[key].length > 30 ? '...' : '') : 'Click to edit'}
-                        </span>
-                        <svg class="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                    </button>
-                {:else if key === "Date"}
+            {#if key === "DV No."}
+                <td class="data-cell dv-no">
                     <input
-                        type="date"
+                        type="text"
                         class="text-input"
                         value={row[key]}
                         on:input={e => updateValue(key, e.target.value)}
+                        placeholder="Enter DV No."
                     />
-                {:else if key === "Mode"}
-                    <select
-                        class="select-input"
-                        value={row[key]}
-                        on:change={e => updateValue(key, e.target.value)}
-                    >
-                        <option value="">Select Payment Mode</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Check">Check</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                        <option value="Other">Other</option>
-                    </select>
-                {:else}
-                    <input 
-                        type="text" 
-                        class="text-input"
-                        value={row[key]}
-                        on:input={e => updateValue(key, e.target.value)}
-                        placeholder="Enter value"
-                    />
-                {/if}
-            </td>
+                </td>
+            {:else}
+                <td class="data-cell {key.toLowerCase().replace(' ', '-')}">
+                    {#if key === "Apply Tax"}
+                        <label class="checkbox-wrapper">
+                            <input
+                                type="checkbox"
+                                class="checkbox-input"
+                                checked={row[key]}
+                                on:change={e => updateValue(key, e.target.checked)}
+                            />
+                            <span class="checkbox-custom"></span>
+                        </label>
+                    {:else if key === "Particulars" || key === "Address"}
+                        <button class="text-btn" on:click={() => openModal(key)}>
+                            <span class="text-content">
+                                {row[key] ? row[key].slice(0, 30) + (row[key].length > 30 ? '...' : '') : 'Click to edit'}
+                            </span>
+                            <svg class="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                    {:else if key === "Date"}
+                        <input
+                            type="date"
+                            class="text-input"
+                            value={row[key]}
+                            on:input={e => updateValue(key, e.target.value)}
+                        />
+                    {:else if key === "Mode"}
+                        <select
+                            class="select-input"
+                            value={row[key]}
+                            on:change={e => updateValue(key, e.target.value)}
+                        >
+                            <option value="">Select Payment Mode</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Check">Check</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    {:else}
+                        <input 
+                            type="text" 
+                            class="text-input"
+                            value={row[key]}
+                            on:input={e => updateValue(key, e.target.value)}
+                            placeholder="Enter value"
+                        />
+                    {/if}
+                </td>
+            {/if}
         {/if}
     {/each}
     <td class="action-cell">
@@ -195,6 +217,10 @@
         padding: 12px 16px;
         vertical-align: middle;
         min-width: 140px;
+    }
+    .data-cell.dv-no {
+        min-width: 120px;
+        width: 120px;
     }
     .data-cell.apply-tax {
         min-width: 100px;

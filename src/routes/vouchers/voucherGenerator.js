@@ -36,10 +36,13 @@ export function generateVoucher(voucherData) {
   const tax = apply_tax ? amount * 0.10 : 0;
   const total = amount - tax;
   
-  // Format amounts (PHP format with space thousands separator and comma decimal)
-  const totalFormatted = `PHP ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
-  const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
-  const amountFormatted = `PHP ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+  // Format amounts (PHP format with comma thousands separator and dot decimal)
+  function formatAmount(n) {
+    return `PHP ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  const totalFormatted = formatAmount(total);
+  const taxFormatted = formatAmount(tax);
+  const amountFormatted = formatAmount(amount);
   
   // Generate date
   const date = new Date().toLocaleDateString('en-GB', { 
@@ -240,21 +243,3 @@ export function generateVoucher(voucherData) {
   // Save the PDF
   doc.save(`voucher_${dv_no.replace("/", "-")}.pdf`);
 }
-
-// Example usage:
-/*
-const voucherData = {
-  payee: "John Doe",
-  address: "123 Main St, City",
-  dv_no: "SO-25-002",
-  mode: "Check",
-  charge: "Office Supplies",
-  particulars: "Purchase of office materials and supplies",
-  authorized_rep: "Jane Smith",
-  approver: "Robert Johnson",
-  amount: 5000.00,
-  apply_tax: true
-};
-
-generateVoucher(voucherData);
-*/
