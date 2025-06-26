@@ -1,8 +1,11 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { supabase } from '$lib/supabaseClient.js';
-    import { projects, liquidations, projectsLoading } from '$lib/stores/stores';
+    import { projectsLoading, liquidationsLoading } from '$lib/stores/stores';
     import Spinner from '$lib/components/Spinner.svelte';
+
+    let projects: Project[] = $state([]);
+    let liquidations: LiquidationEntry[] = $state([]);
 
     let selectedProject = $state<string>("")
     let sortBy: string = $state("dv_no")
@@ -11,7 +14,7 @@
     async function loadProjects() {
         projectsLoading.set(true)
         let { data } = await supabase.from("project_summaries").select();
-        projects.set(data ?? [])
+        projects = data ?? []
         projectsLoading.set(false)
 
         if (data && data.length > 0 && !selectedProject) {
@@ -20,30 +23,33 @@
     }
 
     async function loadLiquidations(project: string, sortBy: string, sortOrder: string) {
+        liquidationsLoading.set(true)
         const { data } = await supabase
             .from("liquidations")
             .select()
             .eq("code", selectedProject)
             .order(sortBy, {ascending: sortOrder === 'ascending'})
-        liquidations.set(data ?? [])
-        console.log($liquidations)
+
+        
+
+        liquidations = data ?? []
+        liquidationsLoading.set(false)
+    }
+
+    async function reloadData() {
+        await loadProjects()
+        await loadLiquidations(selectedProject, sortBy, sortOrder)
     }
 
     onMount(async () => {
-        if ($projects.length == 0) {
-            await loadProjects() 
-        }
-        
-        if ($projects && $projects.length > 0 && !selectedProject) {
-            selectedProject = $projects[0].code
-        }
-
-        console.log($projects)
+        await reloadData()
     })
 
     $effect(() => { 
         if (selectedProject) {
-            loadLiquidations(selectedProject, sortBy, sortOrder)
+            loadLiquidations(selectedProject, sortBy, sortOrder).then(() => {
+                console.log(liquidations)
+            });
         }
     })
 
@@ -53,7 +59,7 @@
     }
 
     function createNewProject() {
-        alert("Creating new project...")
+        reloadData()
     }
 </script>
 
@@ -61,6 +67,7 @@
 
 <div class="flex justify-between items-center gap-5">
     <div class="flex justify-start items-center gap-5">
+        <!-- TODO: create collapsible header -->
         <h1 class="text-4xl font-semibold">
             <a href="#top">View Project</a>
         </h1>
@@ -71,7 +78,7 @@
         appearance:none font-bold
         py-2.5 px-2">
             <option class="" value=""></option>
-            {#each $projects as project}
+            {#each projects as project}
             <option class="" value={project.code}>{project.code}</option>
             {/each}
         </select>
@@ -146,6 +153,7 @@
 <!-- LIQUIDATION TABLE -->
 
 <div class="relative overflow-x-auto border border-black/15 shadow-sm">
+    
 <table class="w-full text-sm text-left rtl:text-right text-black">
 <thead class="text-xs text-white bg-primary">
 <tr>
@@ -170,7 +178,7 @@
 </tr>
 </thead>
 <tbody class="text-[13px]">
-{#each $liquidations as liquidation}
+{#each liquidations as liquidation}
     <tr class="text-xs border-b border-gray-200 hover:bg-gray-100 ">
     {#each [
         liquidation.payee_name,
@@ -178,9 +186,9 @@
         liquidation.voucher_date,
         liquidation.particulars,
         liquidation.tin_no,
-        `${liquidation.gross}`,
-        liquidation.amount_taxed,
-        liquidation.net_amount,
+        `${liquidation.gross}.00`,
+        `${liquidation.amount_taxed}.00`,
+        `${liquidation.net_amount}.00`,
         liquidation.remarks,
     ] as entry}
         <td class="px-2 py-4 max-w-[200px]">
@@ -198,10 +206,9 @@
 
 <!-- ALL PROJECTS -->
 
-
 <div class="flex justify-start items-center gap-4 mt-10">
     <h1 class="text-3xl font-semibold">All Projects</h1>
-    <div class="-mx-2 py-3 text-black/30">•</div>
+    <div class="-mx-1.5 py-3 text-black/30">•</div>
     <button
         type="button"
         class="border text-white bg-secondary hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5"
@@ -215,6 +222,13 @@
 
 <!-- PROJECTS TABLE -->
 
+{#if $projectsLoading}
+<div class="w-full h-30 flex items-center justify-center">
+    <Spinner />
+</div>
+{:else}
+
+
 <div class="relative overflow-x-auto border border-black/15 shadow-sm">
 <table class="w-full text-sm text-left rtl:text-right text-black">
 <thead class="text-xs text-white bg-primary">
@@ -222,8 +236,8 @@
     {#each [
         "Project Code",
 		"Project Title",
-		"Gross Total",
-		"Net Total",
+		"Gross Total (PHP)",
+		"Net Total (PHP)",
 		"Total Payees",
 		"Total vouchers",
     ] as column}
@@ -235,7 +249,7 @@
 </tr>
 </thead>
 <tbody>
-{#each $projects as project}
+{#each projects as project}
     <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
         <td class="px-6 py-3 text-gray-900 whitespace-nowrap ">
             {project.code}
@@ -260,6 +274,7 @@
 </tbody>
 </table>
 </div>
+{/if}
 
 <style>
     select {
@@ -268,5 +283,4 @@
     option {
         text-decoration: italic;
     }
-
 </style>
