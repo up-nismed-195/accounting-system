@@ -8,14 +8,12 @@
     export let selected = false;
     export let onSelectRow = () => {};
 
-    // Props for controlling menu open state from parent
     export let openMenuIndex = null;
     export let setOpenMenu = (idx: number|null) => {};
 
     let menuStyle = "";
     let penBtn: HTMLButtonElement;
 
-    // Only show menu if this row's index matches openMenuIndex
     $: showActions = openMenuIndex === i;
 
     function toggleActions(e) {
@@ -24,7 +22,6 @@
             setOpenMenu(null);
         } else {
             setOpenMenu(i);
-            // Position menu to the left of the button
             if (penBtn) {
                 const rect = penBtn.getBoundingClientRect();
                 menuStyle = `
@@ -80,7 +77,9 @@
     <td class="select-cell">
         <input type="checkbox" checked={selected} on:change={onSelectRow} />
     </td>
-    <td class="id-cell">{row["DV No."] || '-'}</td>
+    <td class="id-cell">
+        <span class="dvno-text">{row["DV No."] || '-'}</span>
+    </td>
     <td class="data-cell">{row["Date"]}</td>
     <td class="data-cell">{row["Payee"]}</td>
     <td class="data-cell">{row["Amount"]}</td>
@@ -114,53 +113,63 @@
 {/if}
 
 <style>
+    .table-row {
+        background: #fff;
+        transition: background-color 0.15s;
+    }
+    .table-row:hover {
+        background-color: #f0fdf4;
+    }
     .select-cell {
         width: 40px;
         text-align: center;
-    }
-    .table-row {
-        border-bottom: 1px solid #e5e7eb;
-        transition: background-color 0.15s ease;
-    }
-    .table-row:hover {
-        background-color: #f9fafb;
+        padding: 9px 12px;
+        font-size: 0.93rem;
     }
     .id-cell {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        color: white;
-        font-weight: 600;
-        font-size: 1rem;
-        padding: 10px 16px;
+        padding: 0;
         text-align: center;
-        border-radius: 8px;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 4px rgba(34, 197, 94, 0.15);
-        border: none;
-        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
-        min-width: 90px;
         vertical-align: middle;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: none;
+        border-radius: 0;
+    }
+    .dvno-text {
+        display: inline-block;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.98rem;
+        border-radius: 8px;
+        padding: 7px 28px;
+        min-width: 90px;
+        max-width: 180px;
+        text-align: center;
+        letter-spacing: 0.5px;
+        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+        box-shadow: 0 1px 2px rgba(34,197,94,0.10);
         white-space: nowrap;
-        overflow-x: auto;
-        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 4px 0;
+        transition: background 0.15s;
     }
     .data-cell {
-        padding: 12px 16px;
+        padding: 9px 12px;
         vertical-align: middle;
         min-width: 120px;
         max-width: 220px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        font-size: 0.93rem;
+        color: #111827;
     }
     .remarks-input {
         width: 100%;
         border: 1px solid #e5e7eb;
         border-radius: 4px;
         padding: 4px 8px;
-        font-size: 1rem;
+        font-size: 0.93rem;
         background: #fff;
         color: #374151;
     }
@@ -174,6 +183,7 @@
         padding: 8px 8px;
         vertical-align: middle;
         position: relative;
+        font-size: 0.93rem;
     }
     .pen-btn {
         background: #f1f5f9;
@@ -220,7 +230,7 @@
         border: none;
         padding: 12px 18px;
         text-align: left;
-        font-size: 1rem;
+        font-size: 0.93rem;
         color: #374151;
         cursor: pointer;
         transition: background 0.12s;

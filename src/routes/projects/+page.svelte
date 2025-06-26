@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+    import { onMount } from 'svelte';
     import { supabase } from '$lib/supabaseClient.js';
     import { projects, liquidations, projectsLoading } from '$lib/stores/stores';
     import Spinner from '$lib/components/Spinner.svelte';
 
-
     let selectedProject = $state<string>("")
     let sortBy: string = $state("dv_no")
     let sortOrder: string = $state("ascending")
-    
+
     async function loadProjects() {
         projectsLoading.set(true)
         let { data } = await supabase.from("project").select("code,name");
@@ -26,7 +25,6 @@
             .select()
             .eq("code", selectedProject)
             .order(sortBy, {ascending: sortOrder === 'ascending'})
-            // .order(sortBy)   
         liquidations.set(data ?? [])
         console.log($liquidations)
     }
@@ -48,6 +46,11 @@
             loadLiquidations(selectedProject, sortBy, sortOrder)
         }
     })
+
+    function generatePDFReport() {
+        alert("Generating Liquidation Report PDF...");
+        // TODO: Implement actual PDF generation
+    }
 </script>
 
 <!-- HEADER -->
@@ -70,42 +73,42 @@
 
         <div class="-mx-2 py-3 text-black/30">•</div>
 
+        <!-- Sort by UI -->
         <div class="flex gap-2 items-center">
-            <select bind:value={sortBy} id="countries" class=" bg-secondary/10
-            text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
-            appearance:none
-            py-2.5 pl-3">
-                {#each [
-                    {value: "dv_no", title: "DV No."},
-                    {value: "payee_name", title: "Payee"},
-                    {value: "gross", title: "Gross Amount"},
-                    {value: "amount_taxed", title: "Tax"},
-                ] as {value, title}}
-                    <option class="" value={value}>Sort by {title}</option>
-                {/each}
+            <label for="sortBy" class="font-medium text-green-900">Sort by:</label>
+            <select id="sortBy" bind:value={sortBy} class="rounded-lg border border-green-300 px-2 py-1 text-sm focus:ring-2 focus:ring-green-400">
+                <option value="dv_no">No.</option>
+                <option value="payee_name">Payee</option>
+                <option value="gross">Gross Amount</option>
+                <option value="amount_taxed">Tax</option>
             </select>
+            <button
+                class="border rounded px-2 py-1 text-green-900 bg-green-50 hover:bg-green-100 flex items-center justify-center sort-arrow-btn"
+                on:click={() => sortOrder = sortOrder === "ascending" ? "descending" : "ascending"}
+                aria-label="Toggle sort order"
+            >
+                {#if sortOrder === "ascending"}
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <polygon points="10,6 15,13 5,13" fill="#166534"/>
+                    </svg>
+                {:else}
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                        <polygon points="10,14 15,7 5,7" fill="#166534"/>
+                    </svg>
+                {/if}
+            </button>
         </div>
-
-        <div class="flex gap-2 items-center -ml-3">
-            <select bind:value={sortOrder} id="countries" class=" bg-secondary/10
-            text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
-            appearance:none
-            py-2.5 pl-3">
-                {#each [
-                    {value: "ascending", title: "Ascending"},
-                    {value: "descending", title: "Descending"},
-                ] as {value, title}}
-                    <option class="" value={value}>{title}</option>
-                {/each}
-            </select>
-        </div>
+        <!-- End Sort by UI -->
 
         {/if}    
     </div>
 
-    <div class="flex justify-end items-center gap-8">
-        <button type="button" class="border text-white bg-blue-700 hover:bg-blue-800
-            focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+    <div class="flex justify-end items-center gap-4">
+        <button
+            type="button"
+            class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+            on:click={generatePDFReport}
+        >
             Generate Liquidation Report
         </button>
     </div>
@@ -166,8 +169,6 @@
 </table>
 </div>
 
-
-
 <!-- ALL PROJECTS -->
 
 <h1 class="text-3xl font-semibold mt-9">All Projects</h1>
@@ -225,6 +226,20 @@
     option {
         text-decoration: italic;
     }
+    .sort-arrow-btn {
+        width: 2.2rem;
+        height: 2.2rem;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #bbf7d0;
+        background: #f0fdf4;
+        margin-left: 0.2rem;
+        transition: background 0.12s, border 0.12s;
+    }
+    .sort-arrow-btn:focus, .sort-arrow-btn:hover {
+        background: #bbf7d0;
+        border-color: #22c55e;
+    }
 </style>
-
-

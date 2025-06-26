@@ -4,13 +4,16 @@
     import { goto } from '$app/navigation';
     import { generateVoucher } from "./voucherGenerator.js";
 
-    // Updated headers (no Gross)
     const headers = [
         "DV No.", "Date", "Payee", "Amount", "Particular", "Remarks", "Address"
     ];
 
     let selectedRows = [];
     let openMenuIndex = null;
+
+    // --- Sorting State ---
+    let sortBy = "DV No.";
+    let sortOrder = "asc";
 
     function setOpenMenu(idx) {
         openMenuIndex = idx;
@@ -62,23 +65,59 @@
             generateVoucher(converted);
         });
     }
+
+    // --- Sorting Logic ---
+    $: sortedRows = [...$table_data.rows].sort((a, b) => {
+        let aVal, bVal;
+        if (sortBy === "Payee") {
+            aVal = (a["Payee"] || "").toLowerCase();
+            bVal = (b["Payee"] || "").toLowerCase();
+        } else {
+            // "DV No."
+            aVal = (a["DV No."] || "").toString();
+            bVal = (b["DV No."] || "").toString();
+        }
+        if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+    });
 </script>
 
-<div class="button-bar">
-    <button on:click={addVoucher} class="main-btn add-btn">
-        New
-    </button>
-    <button
-        class="main-btn generate-btn"
-        on:click={generateSelectedPDFs}
-        disabled={selectedRows.length === 0}
-    >
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;" viewBox="0 0 24 24">
-            <path d="M12 16v-8M8 12l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="4" y="4" width="16" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Generate Vouchers
-    </button>
+<!-- HEADER -->
+
+<div class="flex justify-between items-center gap-5">
+    <div class="flex items-center gap-5">
+        <h1 class="text-3xl font-semibold">
+            Vouchers
+        </h1>
+        <div class="flex gap-2 items-center">
+            <label for="sortBy" class="font-medium text-green-900">Sort by:</label>
+            <select id="sortBy" bind:value={sortBy} class="rounded-lg border border-green-300 px-2 py-1 text-sm">
+                <option value="DV No.">No.</option>
+                <option value="Payee">Payee</option>
+            </select>
+            <button class="border rounded px-2 py-1 text-green-900 bg-green-50 hover:bg-green-100"
+                on:click={() => sortOrder = sortOrder === "asc" ? "desc" : "asc"}>
+                {sortOrder === "asc" ? "▲" : "▼"}
+            </button>
+        </div>
+    </div>
+    <div class="flex gap-3">
+        <button on:click={addVoucher} class="border text-white bg-emerald-600 hover:bg-emerald-700 font-medium rounded-lg text-sm px-5 py-2.5">
+            New Voucher
+        </button>
+        <button
+            class="border text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center gap-2"
+            on:click={generateSelectedPDFs}
+            disabled={selectedRows.length === 0}
+        >
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;" viewBox="0 0 24 24">
+                <path d="M12 16v-8M8 12l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="4" y="4" width="16" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Generate Vouchers
+        </button>
+    </div>
 </div>
 
 <div class="table-scroll">
@@ -93,7 +132,7 @@
             </tr>
         </thead>
         <tbody>
-            {#each $table_data.rows as row, i (i)}
+            {#each sortedRows as row, i (i)}
                 <Row
                     {row}
                     {i}
@@ -108,48 +147,6 @@
 </div>
 
 <style>
-.button-bar {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.main-btn {
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 0.7rem 1.7rem;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
-    outline: none;
-    text-transform: capitalize;
-}
-.add-btn {
-    background: #10b981;
-    color: #fff;
-}
-.add-btn:hover {
-    background: #059669;
-    transform: translateY(-2px) scale(1.03);
-}
-.generate-btn {
-    background: #2563eb;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    gap: 0.5rem;
-}
-.generate-btn:disabled {
-    background: #a5b4fc;
-    color: #e0e7ff;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-.generate-btn:not(:disabled):hover {
-    background: #1d4ed8;
-    transform: translateY(-2px) scale(1.03);
-}
 .table-scroll {
     width: 100%;
     overflow-x: auto;
@@ -164,18 +161,68 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.07);
+    font-size: 0.93rem;
 }
 .header-cell {
-    background: #f1f5f9;
-    color: #334155;
+    background: #166534;
+    color: #fff;
     font-weight: 700;
-    padding: 14px 18px;
-    border-bottom: 2px solid #e5e7eb;
+    padding: 10px 14px;
+    border-bottom: none;
     text-align: left;
-    font-size: 1rem;
+    font-size: 0.97rem;
     letter-spacing: 0.5px;
     position: sticky;
     top: 0;
     z-index: 1;
+}
+.wide-table th, .wide-table td {
+    border-right: none;
+}
+.wide-table th:last-child, .wide-table td:last-child {
+    border-right: none;
+}
+.wide-table tr {
+    border-bottom: none;
+    background: #fff;
+    transition: background-color 0.15s;
+}
+.wide-table tr:hover {
+    background-color: #f0fdf4;
+}
+.data-cell, .id-cell, .select-cell, .action-cell {
+    padding: 9px 12px;
+    vertical-align: middle;
+    font-size: 0.93rem;
+    color: #111827;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.id-cell {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+}
+.select-cell {
+    width: 40px;
+    text-align: center;
+}
+.action-cell {
+    min-width: 60px;
+    width: 60px;
+    padding: 8px 8px;
+    vertical-align: middle;
+    position: relative;
 }
 </style>
