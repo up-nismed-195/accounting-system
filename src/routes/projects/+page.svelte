@@ -65,7 +65,7 @@
     // ==================
 
     function generatePDFReport() {
-        alert("Generating Liquidation Report PDF...");
+        alert(JSON.stringify(liquidations))
         // TODO: Implement actual PDF generation
     }
 
