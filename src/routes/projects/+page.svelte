@@ -32,7 +32,7 @@
     import { projectsLoading, liquidationsLoading } from '$lib/stores/stores';
 
     let projects: Project[] = $state([]);
-    let selectedProject = $state<string>("")
+    let selectedProject = $state("")
     let sortBy: string = $state("dv_no")
     let sortOrder: string = $state("ascending")
 
@@ -64,7 +64,6 @@
     // Generating reports
     // ==================
 
-
     function generatePDFReport() {
         alert("Generating Liquidation Report PDF...");
         // TODO: Implement actual PDF generation
@@ -76,14 +75,19 @@
 
     import NewProject from './NewProject.svelte'
 
-    let showProjectModal = false
+    let showNewProjectModal = $state(false)
+
     function createNewProject() {
-        showProjectModal = true
-        reloadData()
+        showNewProjectModal = true
+    }
+
+    function cancelNewProjectModal() {
+        showNewProjectModal = false
     }
 
     function closeNewProjectModal() {
-        showProjectModal = false
+        showNewProjectModal = false
+        reloadData()
     }
 
     
@@ -167,7 +171,7 @@
         <button
             type="button"
             class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
-            on:click={generatePDFReport}
+            onclick={generatePDFReport}
         >
             Generate Liquidation Report
         </button>
@@ -238,7 +242,7 @@
     <button
         type="button"
         class="border text-white bg-secondary hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5"
-        on:click={createNewProject}
+        onclick={createNewProject}
     >
     Create New Project
     </button>
@@ -310,3 +314,18 @@
         text-decoration: italic;
     }
 </style>
+
+{#if showNewProjectModal}
+    <div class="fixed inset-0 flex items-center justify-center bg-black/40">
+        <div class="bg-white rounded-lg shadow-lg p-8 min-w-[320px] h-[350px] max-w-lg w-full relative
+        border-2 border-primary/40">
+            <button
+                class="absolute top-3 right-5 text-gray-500 hover:text-gray-800 
+                font-medium text-2xl"
+                onclick={cancelNewProjectModal}
+                aria-label="Close"
+            >&times;</button>
+            <NewProject onClose={closeNewProjectModal} onCancel={cancelNewProjectModal}/>
+        </div>
+    </div>
+{/if}
