@@ -13,8 +13,10 @@ declare global {
 		code: string,
 		name: string,
 		is_active?: boolean,
-		created_at?: string,
-		updated_at?: string,
+		gross_total?: number,
+		net_total?: number,
+		total_payees?: number,
+		total_vouchers?: number
 	}
 	
 	interface LiquidationEntry {

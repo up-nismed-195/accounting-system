@@ -10,7 +10,7 @@
 
     async function loadProjects() {
         projectsLoading.set(true)
-        let { data } = await supabase.from("project").select("code,name");
+        let { data } = await supabase.from("project_summaries").select();
         projects.set(data ?? [])
         projectsLoading.set(false)
 
@@ -51,6 +51,10 @@
         alert("Generating Liquidation Report PDF...");
         // TODO: Implement actual PDF generation
     }
+
+    function createNewProject() {
+        alert("Creating new project...")
+    }
 </script>
 
 <!-- HEADER -->
@@ -64,8 +68,9 @@
         {#if $projectsLoading}<Spinner />{:else} 
         <select bind:value={selectedProject} id="countries" class=" bg-primary/10
         text-sm rounded-lg border-2 border-primary hover:bg-primary/20
-        appearance:none
-        py-2.5 pl-3">
+        appearance:none font-bold
+        py-2.5 px-2">
+            <option class="" value=""></option>
             {#each $projects as project}
             <option class="" value={project.code}>{project.code}</option>
             {/each}
@@ -75,28 +80,50 @@
 
         <!-- Sort by UI -->
         <div class="flex gap-2 items-center">
-            <label for="sortBy" class="font-medium text-green-900">Sort by:</label>
-            <select id="sortBy" bind:value={sortBy} class="rounded-lg border border-green-300 px-2 py-1 text-sm focus:ring-2 focus:ring-green-400">
-                <option value="dv_no">No.</option>
-                <option value="payee_name">Payee</option>
-                <option value="gross">Gross Amount</option>
-                <option value="amount_taxed">Tax</option>
+            <select bind:value={sortBy} id="countries" class=" bg-secondary/10
+            text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
+            appearance:none
+            py-2.5 px-2">
+                {#each [
+                    {value: "dv_no", title: "DV No."},
+                    {value: "payee_name", title: "Payee"},
+                    {value: "gross", title: "Gross"},
+                    {value: "net_amount", title: "Net"},
+                    {value: "voucher_date", title: "Date"},
+                    {value: "amount_taxed", title: "Tax"},
+                ] as {value, title}}
+                    <option class="" value={value}>Sort by {title}</option>
+                {/each}
             </select>
-            <button
-                class="border rounded px-2 py-1 text-green-900 bg-green-50 hover:bg-green-100 flex items-center justify-center sort-arrow-btn"
+
+            <select bind:value={sortOrder} id="countries" class=" bg-secondary/10
+            text-sm rounded-lg border-2 border-secondary hover:bg-secondary/20
+            appearance:none
+            py-2.5 px-2">
+                {#each [
+                    {value: "ascending", title: "Ascending"},
+                    {value: "descending", title: "Descending"},
+
+                ] as {value, title}}
+                    <option class="" value={value}>{title}</option>
+                {/each}
+            </select>
+            <!-- svelte-ignore event_directive_deprecated -->
+            <!-- <button
+                class="rounded px-2 py-2.5 bg-secondary hover:bg-blue-800 flex items-center justify-center sort-arrow-btn shadow-"
                 on:click={() => sortOrder = sortOrder === "ascending" ? "descending" : "ascending"}
                 aria-label="Toggle sort order"
             >
                 {#if sortOrder === "ascending"}
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <polygon points="10,6 15,13 5,13" fill="#166534"/>
+                        <polygon points="10,6 15,13 5,13" fill="#ffffff"/>
                     </svg>
                 {:else}
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <polygon points="10,14 15,7 5,7" fill="#166534"/>
+                        <polygon points="10,14 15,7 5,7" fill="#ffffff"/>
                     </svg>
                 {/if}
-            </button>
+            </button> -->
         </div>
         <!-- End Sort by UI -->
 
@@ -118,7 +145,7 @@
 
 <!-- LIQUIDATION TABLE -->
 
-<div class="relative overflow-x-auto border border-black/15">
+<div class="relative overflow-x-auto border border-black/15 shadow-sm">
 <table class="w-full text-sm text-left rtl:text-right text-black">
 <thead class="text-xs text-white bg-primary">
 <tr>
@@ -128,9 +155,9 @@
         "Date",
         "Particulars",
         "TIN No.",
-        "Gross",
-        "Taxed",
-        "Net",
+        "Gross (PHP)",
+        "Taxed (PHP)",
+        "Net (PHP)",
         "Remarks"
     ] as column}
     <th scope="col" class="px-3 py-3">
@@ -142,16 +169,16 @@
     </th>
 </tr>
 </thead>
-<tbody>
+<tbody class="text-[13px]">
 {#each $liquidations as liquidation}
-    <tr class=" border-b border-gray-200 hover:bg-gray-100 ">
+    <tr class="text-xs border-b border-gray-200 hover:bg-gray-100 ">
     {#each [
         liquidation.payee_name,
         liquidation.dv_no,
         liquidation.voucher_date,
         liquidation.particulars,
         liquidation.tin_no,
-        liquidation.gross,
+        `${liquidation.gross}`,
         liquidation.amount_taxed,
         liquidation.net_amount,
         liquidation.remarks,
@@ -171,52 +198,67 @@
 
 <!-- ALL PROJECTS -->
 
-<h1 class="text-3xl font-semibold mt-9">All Projects</h1>
+
+<div class="flex justify-start items-center gap-4 mt-10">
+    <h1 class="text-3xl font-semibold">All Projects</h1>
+    <div class="-mx-2 py-3 text-black/30">•</div>
+    <button
+        type="button"
+        class="border text-white bg-secondary hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5"
+        on:click={createNewProject}
+    >
+    Create New Project
+    </button>
+</div>
+
 <hr class="border-black/20 border-1 mt-3 mb-3 border-dashed">
 
 <!-- PROJECTS TABLE -->
 
-<div class="relative overflow-x-auto border border-black/15">
-    <table class="w-full text-sm text-left rtl:text-right text-black">
-        <thead class="text-xs text-white bg-primary">
-            <tr>
-                <th scope="col" class="px-6 py-3">
-                    Project Code
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Project
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Total   
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Actions
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    <span class="sr-only">Edit</span>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
-                <td scope="row" class="px-6 py-4 text-gray-900 whitespace-nowrap ">
-                    Apple MacBook Pro 17"
-                </td>
-                <td class="px-6 py-4">
-                    Silver
-                </td>
-                <td class="px-6 py-4">
-                    Laptop
-                </td>
-                <td class="px-6 py-4">
-                    $2999
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <a href="#" class="font-medium text-blue-600  hover:underline">Edit</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<div class="relative overflow-x-auto border border-black/15 shadow-sm">
+<table class="w-full text-sm text-left rtl:text-right text-black">
+<thead class="text-xs text-white bg-primary">
+<tr>
+    {#each [
+        "Project Code",
+		"Project Title",
+		"Gross Total",
+		"Net Total",
+		"Total Payees",
+		"Total vouchers",
+    ] as column}
+    <th scope="col" class="px-6 py-3">
+        {column}
+    </th>
+    {/each}
+
+</tr>
+</thead>
+<tbody>
+{#each $projects as project}
+    <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
+        <td class="px-6 py-3 text-gray-900 whitespace-nowrap ">
+            {project.code}
+        </td>
+        <td class="px-6 py-3">
+            {project.name}
+        </td>
+        <td class="px-6 py-3">
+            {project.gross_total}.00
+        </td>
+        <td class="px-6 py-3">
+            {project.net_total}.00
+        </td>
+        <td class="px-6 py-3">
+            {project.total_payees}
+        </td>
+        <td class="px-6 py-3">
+            {project.total_vouchers}
+        </td>   
+    </tr>
+{/each}
+</tbody>
+</table>
 </div>
 
 <style>
@@ -226,20 +268,5 @@
     option {
         text-decoration: italic;
     }
-    .sort-arrow-btn {
-        width: 2.2rem;
-        height: 2.2rem;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1.5px solid #bbf7d0;
-        background: #f0fdf4;
-        margin-left: 0.2rem;
-        transition: background 0.12s, border 0.12s;
-    }
-    .sort-arrow-btn:focus, .sort-arrow-btn:hover {
-        background: #bbf7d0;
-        border-color: #22c55e;
-    }
+
 </style>
