@@ -1,12 +1,37 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { supabase } from '$lib/supabaseClient.js';
-    import { projectsLoading, liquidationsLoading } from '$lib/stores/stores';
+
+    // ===================
+    // mounting, reloading
+    // ===================
+
+    import { onMount } from 'svelte';
     import Spinner from '$lib/components/Spinner.svelte';
 
-    let projects: Project[] = $state([]);
-    let liquidations: LiquidationEntry[] = $state([]);
+    onMount(async () => {
+        await reloadData()
+    })
 
+    async function reloadData() {
+        await loadProjects()
+        await loadLiquidations(selectedProject, sortBy, sortOrder)
+    }
+
+    $effect(() => { 
+        if (selectedProject) {
+            loadLiquidations(selectedProject, sortBy, sortOrder).then(() => {
+                console.log(liquidations)
+            });
+        }
+    })
+
+    // ==============
+    // Loading Tables
+    // ==============
+    
+    import { projectsLoading, liquidationsLoading } from '$lib/stores/stores';
+
+    let projects: Project[] = $state([]);
     let selectedProject = $state<string>("")
     let sortBy: string = $state("dv_no")
     let sortOrder: string = $state("ascending")
@@ -22,6 +47,7 @@
         }
     }
 
+    let liquidations: LiquidationEntry[] = $state([]);
     async function loadLiquidations(project: string, sortBy: string, sortOrder: string) {
         liquidationsLoading.set(true)
         const { data } = await supabase
@@ -30,37 +56,37 @@
             .eq("code", selectedProject)
             .order(sortBy, {ascending: sortOrder === 'ascending'})
 
-        
-
         liquidations = data ?? []
         liquidationsLoading.set(false)
     }
 
-    async function reloadData() {
-        await loadProjects()
-        await loadLiquidations(selectedProject, sortBy, sortOrder)
-    }
+    // ==================
+    // Generating reports
+    // ==================
 
-    onMount(async () => {
-        await reloadData()
-    })
-
-    $effect(() => { 
-        if (selectedProject) {
-            loadLiquidations(selectedProject, sortBy, sortOrder).then(() => {
-                console.log(liquidations)
-            });
-        }
-    })
 
     function generatePDFReport() {
         alert("Generating Liquidation Report PDF...");
         // TODO: Implement actual PDF generation
     }
 
+    // =============
+    // Project Modal
+    // =============
+
+    import NewProject from './NewProject.svelte'
+
+    let showProjectModal = false
     function createNewProject() {
+        showProjectModal = true
         reloadData()
     }
+
+    function closeNewProjectModal() {
+        showProjectModal = false
+    }
+
+    
 </script>
 
 <!-- HEADER -->
