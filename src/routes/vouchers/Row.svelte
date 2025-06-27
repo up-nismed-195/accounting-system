@@ -24,6 +24,11 @@
   let approver = $derived(commonInfo.approver)
   let summaries = $derived(commonInfo.summaries)
 
+  import { padZeroes } from './helpers.ts'
+
+  let voucherIndex = $derived(summaries[project] + index + 1)
+  let dv_no = $derived(`${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
+
   // ==============
   // row operations
   // ==============
@@ -79,7 +84,7 @@
   <td class="px-2 py-3 break-text break-all w-[120px]">
     <input type="text" 
       oninput={e => updateValue(row.dv_no, (e.target as HTMLInputElement).value)}
-      value={`${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${summaries[project] + index + 1}`}
+      value={dv_no}
       class="w-full"
       placeholder="UNICEF-24-001..."
     >

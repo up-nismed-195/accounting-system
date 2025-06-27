@@ -22,6 +22,15 @@ export function generateRandomVoucherData(): VoucherEntry{
     }
 }
 
+export function padZeroes(targetDigits: number, number: number): string {
+    let stringified = number.toString()
+    let numberLength = stringified.length
+    let zeroesToPad = targetDigits - numberLength
+    let padded = "0".repeat(zeroesToPad) + stringified
+    
+    return padded
+}
+
 export function generateVoucher(data: VoucherPDF) {
     console.log(data)
     const voucherData = {
