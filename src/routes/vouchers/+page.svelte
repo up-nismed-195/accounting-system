@@ -34,8 +34,9 @@
 
   
   function addRow() {      
-    let row: VoucherEntry = generateRandomVoucherData()
-    $rows = [...$rows, row]
+    let row: VoucherEntry = generateRandomVoucherData();
+    row.id = crypto.randomUUID(); // assign unique id
+    $rows = [...$rows, row];
   }
 
   function generateAllVouchers() {
@@ -190,7 +191,7 @@
   </tr>
 </thead>
 <tbody>
-    {#each $rows as row, index (index)}
+    {#each $rows as row, index (row.id)}
         <Row {row} {index} {commonInfo}/>
     {/each}
 </tbody>

@@ -32,15 +32,12 @@
   
 
   function deleteRow() {
-    $rows = [
-      ...$rows.slice(0, index),
-      ...$rows.slice(index + 1)
-    ];
+    $rows = $rows.filter(r => r.id !== row.id);
   }
 
   function updateValue(key: string, value: string) {
-    $rows = $rows.map((r, idx) =>
-        idx === index ? { ...r, [key]: value } : r
+    $rows = $rows.map(r =>
+      r.id === row.id ? { ...r, [key]: value } : r
     );
   }
 
