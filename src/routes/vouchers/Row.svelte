@@ -40,10 +40,27 @@
     $rows = $rows.filter(r => r.id !== row.id);
   }
 
-  function updateValue(key: string, value: string) {
-    $rows = $rows.map(r =>
-      r.id === row.id ? { ...r, [key]: value } : r
-    );
+  function updateValue(key: string, current: string, value: any) {
+    $rows = $rows.map(r => {
+      if (r.id === row.id) {
+        console.log("key", key)
+        return { 
+          name: key == "name" ? value : r.name,
+          address: key == "address" ? value : r.address,
+          id: key == "id" ? value :r.id,
+          dv_no: key == "dv_no" ? value : r.dv_no,
+          particulars: key == "particulars" ? value : r.particulars,
+          mode: key == "mode" ? value : r.mode,
+          remarks: key == "remarks" ? value : r.remarks,
+          amount: key == "amount" ? value : r.amount,
+          tax: key == "tax" ? value : r.tax,
+        };
+      } else {
+        return r;
+      }
+    });
+
+
   }
 
   // ================
@@ -76,14 +93,14 @@
   })
   
   onMount(() => {
-    console.log(summaries)
+    // console.log(summaries)
   })
 </script>
 
 <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 "> 
   <td class="px-2 py-3 break-text break-all w-[120px]">
     <input type="text" 
-      oninput={e => updateValue(row.dv_no, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("dv_no", row.dv_no, (e.target as HTMLInputElement).value)}
       value={dv_no}
       class="w-full"
       placeholder="UNICEF-24-001..."
@@ -91,7 +108,7 @@
   </td>
   <td class="px-2 py-3 break-text break-all w-[170px]">
     <input type="text" 
-      oninput={e => updateValue(row.name, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("name", row.name, (e.target as HTMLInputElement).value)}
       value={row.name}
       class="w-full"
       placeholder="Juan dela Cruz..."
@@ -99,7 +116,7 @@
   </td>
   <td class="px-2 py-1 break-text break-all w-[300px]">
     <input type="text" 
-      oninput={e => updateValue(row.address, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("address", row.address, (e.target as HTMLInputElement).value)}
       value={row.address}
       class="w-full"
       placeholder="Pardo de Tavera St, Diliman, Quezon City..."
@@ -107,7 +124,7 @@
   </td>
   <td class="px-2 py-3 break-text break-all w-[150px]">
     <input type="text" 
-      oninput={e => updateValue(row.particulars, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("particulars", row.particulars, (e.target as HTMLInputElement).value)}
       placeholder="Charged to 250k..."
       value={row.particulars}
       class="w-full"
@@ -115,7 +132,7 @@
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
     <input type="text" 
-      oninput={e => updateValue(row.mode, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("mode", row.mode, (e.target as HTMLInputElement).value)}
       value={row.mode}
       class="w-full"
       placeholder="Cash..."
@@ -123,7 +140,7 @@
   </td>
   <td class="px-2 py-3 break-text break-all w-[150px]">
     <input type="text" 
-      oninput={e => updateValue(row.remarks, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("remarks", row.remarks, (e.target as HTMLInputElement).value)}
       value={row.remarks}
       class="w-full"
       placeholder="Paid on time..."
@@ -131,7 +148,7 @@
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
     <input type="number" 
-      oninput={e => updateValue(row.amount, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("amount", row.amount, (e.target as HTMLInputElement).value)}
       value={row.amount}
       class="w-full"
       placeholder="10"  
@@ -139,7 +156,7 @@
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
     <input type="text" 
-      oninput={e => updateValue(row.tax, (e.target as HTMLInputElement).value)}
+      oninput={e => updateValue("tax", row.tax, (e.target as HTMLInputElement).value)}
       value={row.tax}
       class="w-full"
     >

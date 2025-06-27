@@ -7,7 +7,7 @@
   import { generateVoucher } from "./helpers";
 
   let data = $props();
-  console.log(data)
+  // console.log(data)
 
   let selectedProject = $state("")
   let authorizedRep = $state("")
@@ -76,8 +76,8 @@
 
   onMount(async () => {
     await loadProjects()
-    console.log("summaries", summaries)
-    console.log("projects", projects)
+    // console.log("summaries", summaries)
+    // console.log("projects", projects)
   })
 
   // ====================
