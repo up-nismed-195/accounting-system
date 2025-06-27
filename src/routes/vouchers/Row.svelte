@@ -74,7 +74,7 @@
       name: row.name,
       address: row.address,
       particulars: row.particulars,
-      dv_no: row.dv_no,
+      dv_no: dv_no,
       project_name: commonInfo.selectedProject,
       mode: row.mode,
       remarks: row.remarks,
@@ -99,12 +99,13 @@
 
 <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 "> 
   <td class="px-2 py-3 break-text break-all w-[120px]">
-    <input type="text" 
+    <!-- <input type="text" 
       oninput={e => updateValue("dv_no", row.dv_no, (e.target as HTMLInputElement).value)}
       value={dv_no}
       class="w-full"
       placeholder="UNICEF-24-001..."
-    >
+    > -->
+    {dv_no}
   </td>
   <td class="px-2 py-3 break-text break-all w-[170px]">
     <input type="text" 

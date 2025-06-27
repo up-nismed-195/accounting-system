@@ -232,7 +232,7 @@ export function generateVoucher(voucherData) {
   doc.text(`Date: ${date}`, 152.5, receiptY + 72, { align: "center" });
 
   // Save the PDF
-  doc.save(`voucher_${dv_no.replace("/", "-")}.pdf`);
+  doc.save(`${dv_no.replace("/", "-")}.pdf`);
 }
 
 // Example usage:
