@@ -39,14 +39,20 @@
     $rows = [...$rows, row];
   }
 
+  import { padZeroes } from "./helpers";
+
   function generateAllVouchers() {
+    
     $rows.forEach((row, index) => {
+      let voucherIndex = $derived(summaries[selectedProject] + index + 1)
+      let dv_no = $derived(`${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
+
       const BASE = 23;
       const data = {
           name: row.name,
           address: row.address,
           particulars: row.particulars,
-          dv_no: row.dv_no,
+          dv_no: dv_no,
           project_name: selectedProject,
           mode: row.mode,
           remarks: row.remarks,
@@ -205,7 +211,7 @@
   border-bottom: 1px solid rgba(150, 150, 150, 0.82);
 }
 
-:global(input:focus) {
+:global(input:focus), :global(tbody > tr:last-child input:focus) {
   outline: none;
   border-bottom: 2px solid var(--color-secondary);
 }
