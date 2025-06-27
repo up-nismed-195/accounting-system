@@ -24,7 +24,7 @@
   let approver = $derived(commonInfo.approver)
   let summaries = $derived(commonInfo.summaries)
 
-  import { padZeroes } from './helpers.ts'
+  import { padZeroes } from './helpers'
 
   let voucherIndex = $derived(summaries[project] + index + 1)
   let dv_no = $derived(`${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)

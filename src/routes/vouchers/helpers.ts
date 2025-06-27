@@ -11,6 +11,7 @@ function generateRandomString(length: number) {
 
 export function generateRandomVoucherData(): VoucherEntry{
     return {
+        id: crypto.randomUUID(),
         dv_no: "",
         name: "",
         address: "",  
@@ -27,7 +28,7 @@ export function padZeroes(targetDigits: number, number: number): string {
     let numberLength = stringified.length
     let zeroesToPad = targetDigits - numberLength
     let padded = "0".repeat(zeroesToPad) + stringified
-    
+
     return padded
 }
 

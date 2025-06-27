@@ -49,7 +49,7 @@ declare global {
 	interface VoucherEntry extends
 		Pick<Payee, "name" | "address">
 	{	
-		row_id: number
+		id: string,
 		dv_no: string,
 		particulars: string,
 		mode: string,
