@@ -205,9 +205,9 @@
   border-bottom: 1px solid rgba(150, 150, 150, 0.82);
 }
 
-:global(tbody > tr:last-child input:focus) {
+:global(input:focus) {
+  outline: none;
   border-bottom: 2px solid var(--color-secondary);
-  
 }
 
 
