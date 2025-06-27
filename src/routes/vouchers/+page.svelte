@@ -99,22 +99,21 @@
       </button>
     </div>
   </div>
-
- 
 </div>
   
+<hr class="border-black/10 border-1 my-3 border-dashed">
 
-<div class="my-2 gap-2 flex items-center">
-  <div class="flex justify-start gap-2 pt-1">
-    <span class="font-medium text-lg">Authorized representative: </span> 
-    <input bind:value={authorizedRep} class="border" type="text">
+<div class="mb-0.5 gap-2 flex items-center">
+  <div class="flex justify-start gap-2">
+    <span class="font-medium text-sm">Authorized representative: </span> 
+    <input bind:value={authorizedRep} class="border-b border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2" type="text">
   </div>
 
   <div class="text-black/30">•</div>
 
-  <div class="flex justify-start gap-2 pt-1">
-    <span class="font-medium text-lg">Approver: </span> 
-    <input bind:value={approver} class="border" type="text">
+  <div class="flex justify-start gap-2">
+    <span class="font-medium text-sm">Approver: </span> 
+    <input bind:value={approver} class="border-b   border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2"  type="text">
   </div>
 </div>
 <!--
