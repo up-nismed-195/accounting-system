@@ -23,17 +23,6 @@ export function generateRandomVoucherData(): VoucherEntry{
     }
 }
 
-// "payee" |
-// "address" | 
-// "project" | 
-// "particulars" | 
-// "mode_of_payment" | 
-// "remarks" | 
-// "gross" | 
-// "less_tax" |
-// "authorized_rep" |
-// "approver"
-
 export function generateVoucher(data: VoucherPDF) {
     console.log(data)
     const voucherData = {

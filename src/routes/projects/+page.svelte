@@ -162,11 +162,11 @@
     </div>
 </div>
 
-<hr class="border-black/10 border-1 mt-3 mb-3 border-dashed">
+<!-- <hr class="border-black/10 border-1 mt-3 mb-3 border-dashed"> -->
 
 <!-- LIQUIDATION TABLE -->
 
-<div class="relative overflow-x-auto border border-black/15 shadow-sm">
+<div class="mt-2 relative overflow-x-auto border border-black/15 shadow-sm">
     
 <table class="w-full text-sm text-left rtl:text-right text-black">
 <thead class="text-xs text-white bg-primary">
@@ -218,9 +218,11 @@
 </table>
 </div>
 
+<hr class="border-black/20 border-1 mt-10 border-dashed">
+
 <!-- ALL PROJECTS -->
 
-<div class="flex justify-start items-center gap-4 mt-12">
+<div class="flex justify-start items-center gap-4 mt-3">
     <h1 class="text-3xl font-semibold">All Projects</h1>
     <div class="-mx-1.5 py-3 text-black/30">•</div>
     <button
@@ -232,28 +234,28 @@
     </button>
 </div>
 
-<hr class="border-black/20 border-1 mt-3 mb-3 border-dashed">
+
 
 <!-- PROJECTS TABLE -->
 
 {#if $projectsLoading}
-<div class="w-full h-30 flex items-center justify-center">
+<div class="mt-2 w-full h-30 flex items-center justify-center">
     <Spinner />
 </div>
 {:else}
 
 
-<div class="relative overflow-x-auto border border-black/15 shadow-sm">
+<div class="mt-2 relative overflow-x-auto border border-black/15 shadow-sm">
 <table class="w-full text-sm text-left rtl:text-right text-black">
 <thead class="text-xs text-white bg-primary">
 <tr>
     {#each [
         "Project Code",
 		"Project Title",
-		"Gross Total (PHP)",
-		"Net Total (PHP)",
 		"Total Payees",
 		"Total vouchers",
+        "Gross Total (PHP)",
+		"Net Total (PHP)",
     ] as column}
     <th scope="col" class="px-6 py-3">
         {column}
@@ -264,17 +266,11 @@
 <tbody>
 {#each projects as project}
     <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
-        <td class="px-6 py-3 whitespace-nowrap ">
+        <td class="px-6 py-3 whitespace-nowrap">
             {project.code}
         </td>
         <td class="px-6 py-3">
             {project.name}
-        </td>
-        <td class="px-6 py-3">
-            {project.gross_total}.00
-        </td>
-        <td class="px-6 py-3">
-            {project.net_total}.00
         </td>
         <td class="px-6 py-3">
             {project.total_payees}
@@ -282,6 +278,12 @@
         <td class="px-6 py-3">
             {project.total_vouchers}
         </td>   
+         <td class="px-6 py-3">
+            {project.gross_total}.00
+        </td>
+        <td class="px-6 py-3">
+            {project.net_total}.00
+        </td>
     </tr>
 {/each}
 </tbody>

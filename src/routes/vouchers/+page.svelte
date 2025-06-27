@@ -87,7 +87,7 @@
       <h1 class="text-4xl font-semibold">
         <a href="#top">Add Vouchers</a> 
       </h1> 
-      <span class="ml-0.5 -mb-0.5 text-sm">to</span>
+      <!-- <span class="ml-0.5 -mb-0.5 text-sm">to</span> -->
 
       <select bind:value={selectedProject} id="countries" class=" bg-primary/10
       text-sm rounded-lg border-2 border-primary hover:bg-primary/20
@@ -109,28 +109,31 @@
       >
         Add Row
       </button>
-      
-      <button
-            type="button"
-            class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
-            onclick={generateAllVouchers}
-      >
-        Download Vouchers
-      </button>
-      <button
-            type="button"
-            class="border text-white bg-cyan-600 hover:bg-cyan-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
-            onclick={saveAllVouchers}
-      >
-        Save Vouchers
-      </button>
     </div>
+  </div>
+
+  <div class="flex gap-1">
+
+    <button
+      type="button"
+      class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+      onclick={saveAllVouchers}
+    >
+      Save
+    </button>
+    <button
+      type="button"
+      class="border text-white bg-red-600 hover:bg-red-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+      onclick={generateAllVouchers}
+    >
+      Download as PDF
+    </button>
   </div>
 </div>
   
 <hr class="border-black/10 border-1 my-3 border-dashed">
 
-<div class="mb-0.5 gap-2 flex items-center">
+<div class="mt-2 mb-0.5 gap-2 flex items-center">
   <div class="flex justify-start gap-2">
     <span class="font-medium text-sm">Authorized representative: </span> 
     <input bind:value={authorizedRep} class="border-b border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2" type="text">
