@@ -59,7 +59,7 @@
   }
 
   function saveAllVouchers() {
-    
+
   }
   
   // =======
@@ -155,7 +155,7 @@
 <thead class="text-xs text-white bg-primary">
   <tr>
     {#each headers as header} 
-      <th scope="col" class="px-6 py-3">{header}</th>
+      <th scope="col" class="px-3 py-3">{header}</th>
     {/each}
     <th class="p-2"><div class="flex justify-start">Actions</div></th>
   </tr>

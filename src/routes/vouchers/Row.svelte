@@ -67,37 +67,95 @@
   
 </script>
 
-<tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
-    {#each keys as key}
-        <td class="px-2 py-3 max-w-[200px] break- break-all">
-            {row[key]}
-        </td>
-    {/each}
-    <td>
-    <div class="flex gap-0.5">
-      <button
-        type="button"
-        class="border text-white bg-secondary hover:bg-blue-800 font-medium rounded-lg text-sm px-2 py-2"
-        onclick={() => generateVoucher(rowToPDF(row))}
-      >
-        PDF
-      </button>
-      <button
-        type="button"
-        class="border text-white bg-red-500 hover:bg-red-800 font-medium rounded-lg text-sm px-2 py-2"
-        onclick={() => deleteRow()}
-      >
-        Delete
-      </button>
+<tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 "> 
+  <td class="px-2 py-3 break-text break-all w-[100px]">
+    <input type="text" 
+      oninput={e => updateValue(row.dv_no, (e.target as HTMLInputElement).value)}
+      value={row.dv_no}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[200px]">
+    <input type="text" 
+      oninput={e => updateValue(row.name, (e.target as HTMLInputElement).value)}
+      value={row.name}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[250px]">
+    <input type="text" 
+      oninput={e => updateValue(row.address, (e.target as HTMLInputElement).value)}
+      value={row.address}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[150px]">
+    <input type="text" 
+      oninput={e => updateValue(row.particulars, (e.target as HTMLInputElement).value)}
+      value={row.particulars}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[100px]">
+    <input type="text" 
+      oninput={e => updateValue(row.mode, (e.target as HTMLInputElement).value)}
+      value={row.mode}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[150px]">
+    <input type="text" 
+      oninput={e => updateValue(row.remarks, (e.target as HTMLInputElement).value)}
+      value={row.remarks}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[100px]">
+    <input type="text" 
+      oninput={e => updateValue(row.amount, (e.target as HTMLInputElement).value)}
+      value={row.amount}
+      class="w-full"
+    >
+  </td>
+  <td class="px-2 py-3 break-text break-all w-[100px]">
+    <input type="text" 
+      oninput={e => updateValue(row.tax, (e.target as HTMLInputElement).value)}
+      value={row.tax}
+      class="w-full"
+    >
+  </td>
+ 
+ 
+ 
+  <td>
+  <div class="flex gap-0.5">
+    <button
+      type="button"
+      class="border text-white bg-secondary hover:bg-blue-800 font-medium rounded-lg text-sm px-2 py-2"
+      onclick={() => generateVoucher(rowToPDF(row))}
+    >
+      PDF
+    </button>
+    <button
+      type="button"
+      class="border text-white bg-red-500 hover:bg-red-800 font-medium rounded-lg text-sm px-2 py-2"
+      onclick={() => deleteRow()}
+    >
+      Delete
+    </button>
 
-      
-    </div>
-    </td>
+    
+  </div>
+  </td>
 </tr>
 
 
 
 <style>
+
+td {
+  font-size: 12px;
+}
   
 /* td {
   font-size: 14px;
