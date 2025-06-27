@@ -59,8 +59,6 @@
         return r;
       }
     });
-
-
   }
 
   // ================
@@ -68,6 +66,7 @@
   // ================ 
 
   import { generateVoucher } from './helpers.js';
+	import { supabase } from '$lib/supabaseClient.js';
 
   function rowToPDF(row: VoucherEntry): VoucherPDF {
     return {
@@ -86,12 +85,58 @@
       date: Date.now().toString(),
     }
   }
+
+  async function saveToDatabase() {
+    const { data, error } = await supabase
+      .from("payee")
+      .upsert({name: row.name, address: row.address})
+      .select()
+
+    const { data: data2, error: error2 } = await supabase
+      .from("voucher")
+      .upsert({
+        dv_no: dv_no,
+        payee_name: row.name,
+        project_code: project,
+        payment_mode: row.mode,
+        voucher_date: (new Date()).toISOString(),
+        amount: row.amount,
+        authorized_representative: authorizedRep,
+        approver: approver
+      })
+      .select()
+
+    if (data && data2) {
+      alert("success")
+    } else {
+      alert("failure")
+    }
+
+    await loadProjects()
+  
+  }
+
+  import { projectsLoading } from '$lib/stores/stores.js';
+
+  async function loadProjects() {
+    $projectsLoading = true
+    const { data } = await supabase
+        .from("project_summaries")
+        .select();
+
+    summaries = Object.fromEntries(
+      (data ?? []).map(item => [item.code, item.total_vouchers])
+    )
+
+    $projectsLoading = false
+  }
  
   $effect(() => {
     console.log($rows);
     // console.log("selectedProject", project)
   })
-  
+
+
   onMount(() => {
     // console.log(summaries)
   })
@@ -156,7 +201,7 @@
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
-    <input type="text" 
+    <input type="number" 
       oninput={e => updateValue("tax", row.tax, (e.target as HTMLInputElement).value)}
       value={row.tax}
       class="w-full"
@@ -178,6 +223,13 @@
       onclick={() => deleteRow()}
     >
       Delete
+    </button>
+    <button
+      type="button"
+      class="border text-white bg-primary hover:bg-green-900 font-medium rounded-lg text-sm px-2 py-2"
+      onclick={() => saveToDatabase(row)}
+    >
+      Save
     </button>
 
     
