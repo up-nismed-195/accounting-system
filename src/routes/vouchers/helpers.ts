@@ -11,15 +11,14 @@ function generateRandomString(length: number) {
 
 export function generateRandomVoucherData(): VoucherEntry{
     return {
-        dv_no: '1',
-        name: `${generateRandomString(25)}`,
-        address: `${generateRandomString(30)}`,  
-        particulars: `${generateRandomString(25)}`, 
-        mode: `${generateRandomString(5)}`, 
-        remarks: `${generateRandomString(12)}`,
-        amount: Math.round(Math.random() * 50000), 
-        tax: Math.round(Math.random() * 5) * 5, 
-        
+        dv_no: "",
+        name: "",
+        address: "",  
+        particulars: "", 
+        mode: "", 
+        remarks: "",
+        amount: 0, 
+        tax: 0, 
     }
 }
 

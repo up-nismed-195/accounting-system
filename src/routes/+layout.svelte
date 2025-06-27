@@ -96,7 +96,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; /* Prevents horizontal scroll */
-  padding: 2.5rem 7.5rem;
+  padding: 2.5rem 5rem;
   box-sizing: border-box;
   background: #f8fafc;
 }

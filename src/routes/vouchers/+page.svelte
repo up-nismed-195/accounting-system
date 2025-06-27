@@ -69,16 +69,32 @@
   import { onMount } from "svelte";
   import { supabase } from "$lib/supabaseClient";
 
-  let projects: Project[] = $state([])
+  
   
   onMount(async () => {
+    await loadProjects()
+
+  })
+
+  // =================
+  // Loading Animation
+  // =================
+
+  import Spinner from "$lib/components/Spinner.svelte";
+  import { projectsLoading } from "$lib/stores/stores";
+
+  let projects: string[] = $state([])
+
+  async function loadProjects() {
+    $projectsLoading = true
     const { data } = await supabase
         .from("project_summaries")
         .select();
 
     projects = (data ?? []).map(item => item.code)
-    selectedProject = projects[0]
-  })
+    selectedProject = projects.length == 0 ? "" : projects[0] 
+    $projectsLoading = false
+  }
 </script>
 
 <div class="flex justify-between items-start gap-5">
@@ -88,7 +104,9 @@
         <a href="#top">Add Vouchers</a> 
       </h1> 
       <!-- <span class="ml-0.5 -mb-0.5 text-sm">to</span> -->
-
+      {#if $projectsLoading}
+        <Spinner />
+      {:else}
       <select bind:value={selectedProject} id="countries" class=" bg-primary/10
       text-sm rounded-lg border-2 border-primary hover:bg-primary/20
       appearance:none font-bold
@@ -97,6 +115,7 @@
             <option class="" value={project} selected>{project}</option>
           {/each}
       </select>
+      {/if}
     </div>
 
     <div class="py-3 text-black/30">•</div>
@@ -131,11 +150,11 @@
   </div>
 </div>
   
-<hr class="border-black/10 border-1 my-3 border-dashed">
+<!-- <hr class="border-black/10 border-1 mt-2 mb-4 border-dashed"> -->
 
-<div class="mt-2 mb-0.5 gap-2 flex items-center">
+<div class="mt-4 mb-0.5 gap-2 flex items-center">
   <div class="flex justify-start gap-2">
-    <span class="font-medium text-sm">Authorized representative: </span> 
+    <span class="font-medium text-sm mb-2">Authorized representative: </span> 
     <input bind:value={authorizedRep} class="border-b border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2" type="text">
   </div>
 
@@ -158,7 +177,7 @@
 <thead class="text-xs text-white bg-primary">
   <tr>
     {#each headers as header} 
-      <th scope="col" class="px-6 py-3">{header}</th>
+      <th scope="col" class="px-3 py-3">{header}</th>
     {/each}
     <th class="p-2"><div class="flex justify-start">Actions</div></th>
   </tr>
@@ -172,6 +191,19 @@
 </div>
 
 <style>
+
+:global(tbody > tr:last-child input) {
+  outline: none;
+  border-bottom: 1px solid rgba(150, 150, 150, 0.82);
+}
+
+:global(tbody > tr:last-child input:focus) {
+  border-bottom: 2px solid var(--color-secondary);
+  
+}
+
+
+
 
 
 </style>

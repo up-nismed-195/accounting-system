@@ -68,30 +68,34 @@
 </script>
 
 <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 "> 
-  <td class="px-2 py-3 break-text break-all w-[100px]">
+  <td class="px-2 py-3 break-text break-all w-[120px]">
     <input type="text" 
       oninput={e => updateValue(row.dv_no, (e.target as HTMLInputElement).value)}
       value={row.dv_no}
       class="w-full"
+      placeholder="UNICEF-24-001..."
     >
   </td>
-  <td class="px-2 py-3 break-text break-all w-[200px]">
+  <td class="px-2 py-3 break-text break-all w-[170px]">
     <input type="text" 
       oninput={e => updateValue(row.name, (e.target as HTMLInputElement).value)}
       value={row.name}
       class="w-full"
+      placeholder="Juan dela Cruz..."
     >
   </td>
-  <td class="px-2 py-3 break-text break-all w-[250px]">
+  <td class="px-2 py-1 break-text break-all w-[300px]">
     <input type="text" 
       oninput={e => updateValue(row.address, (e.target as HTMLInputElement).value)}
       value={row.address}
       class="w-full"
+      placeholder="Pardo de Tavera St, Diliman, Quezon City..."
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[150px]">
     <input type="text" 
       oninput={e => updateValue(row.particulars, (e.target as HTMLInputElement).value)}
+      placeholder="Charged to 250k..."
       value={row.particulars}
       class="w-full"
     >
@@ -101,6 +105,7 @@
       oninput={e => updateValue(row.mode, (e.target as HTMLInputElement).value)}
       value={row.mode}
       class="w-full"
+      placeholder="Cash..."
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[150px]">
@@ -108,13 +113,15 @@
       oninput={e => updateValue(row.remarks, (e.target as HTMLInputElement).value)}
       value={row.remarks}
       class="w-full"
+      placeholder="Paid on time..."
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
-    <input type="text" 
+    <input type="number" 
       oninput={e => updateValue(row.amount, (e.target as HTMLInputElement).value)}
       value={row.amount}
       class="w-full"
+      placeholder="10"  
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
@@ -156,6 +163,15 @@
 td {
   font-size: 12px;
 }
+
+::placeholder {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(150, 150, 150, 0.4);
+}
+
+
+
   
 /* td {
   font-size: 14px;
