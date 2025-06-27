@@ -12,11 +12,13 @@
   let selectedProject = $state("")
   let authorizedRep = $state("")
   let approver = $state("")
+  let summaries: Record<string, number> = $state({})
 
   let commonInfo = $derived({
     project: selectedProject,
     authorizedRep: authorizedRep,
-    approver: approver
+    approver: approver,
+    summaries: summaries,
   })
 
   const headers = [
@@ -69,16 +71,17 @@
   import { onMount } from "svelte";
   import { supabase } from "$lib/supabaseClient";
 
-  
-  
+ 
+
   onMount(async () => {
     await loadProjects()
-
+    console.log("summaries", summaries)
+    console.log("projects", projects)
   })
 
-  // =================
-  // Loading Animation
-  // =================
+  // ====================
+  // Loading initial data
+  // ====================
 
   import Spinner from "$lib/components/Spinner.svelte";
   import { projectsLoading } from "$lib/stores/stores";
@@ -92,6 +95,10 @@
         .select();
 
     projects = (data ?? []).map(item => item.code)
+    summaries = Object.fromEntries(
+      (data ?? []).map(item => [item.code, item.total_vouchers])
+    )
+
     selectedProject = projects.length == 0 ? "" : projects[0] 
     $projectsLoading = false
   }

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
   import { rows } from './data.svelte.js';
 
   // ===================
@@ -12,10 +13,16 @@
       project: string,
       authorizedRep: string,
       approver: string,
+      summaries: Record<string, number>,
     };
   }>();
 
-  let { project, authorizedRep, approver } = commonInfo
+  // let { project, authorizedRep, approver, summaries } = commonInfo
+
+  let project = $derived(commonInfo.project)
+  let authorizedRep = $derived(commonInfo.authorizedRep)
+  let approver = $derived(commonInfo.approver)
+  let summaries = $derived(commonInfo.summaries)
 
   // ==============
   // row operations
@@ -63,15 +70,19 @@
  
   $effect(() => {
     console.log($rows);
+    // console.log("selectedProject", project)
   })
   
+  onMount(() => {
+    console.log(summaries)
+  })
 </script>
 
 <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 "> 
   <td class="px-2 py-3 break-text break-all w-[120px]">
     <input type="text" 
       oninput={e => updateValue(row.dv_no, (e.target as HTMLInputElement).value)}
-      value={row.dv_no}
+      value={`${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${summaries[project] + index + 1}`}
       class="w-full"
       placeholder="UNICEF-24-001..."
     >
@@ -131,8 +142,6 @@
       class="w-full"
     >
   </td>
- 
- 
  
   <td>
   <div class="flex gap-0.5">
