@@ -162,7 +162,7 @@
     </div>
 </div>
 
-<!-- <hr class="border-black/10 border-1 mt-3 mb-3 border-dashed"> -->
+<hr class="border-black/10 border-1 mt-3 mb-3 border-dashed">
 
 <!-- LIQUIDATION TABLE -->
 
