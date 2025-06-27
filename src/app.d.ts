@@ -40,6 +40,39 @@ declare global {
 		total_payees: number,
 		total_vouchers: number,
 	}
+
+	interface Payee {
+		name: string,
+		address: string,
+	}
+
+	interface VoucherEntry extends
+		Pick<Payee, "name" | "address">
+	{
+		dv_no: string,
+		particulars: string,
+		mode: string,
+		remarks: string,
+		amount: number,
+		tax: number,
+	}
+
+	interface VoucherPDF extends Pick<VoucherEntry, 
+		"name"  
+		|"address"
+		| "dv_no" 
+		| "particulars" 
+		| "mode" 
+		| "remarks" 
+		| "amount" 
+		| "tax"
+	> {
+		project_name: string,
+		date: string,	
+		total: number,
+		authorized_rep: string,
+		approver: string,
+	}
 }
 
 export {};

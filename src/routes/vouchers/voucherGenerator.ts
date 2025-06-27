@@ -15,7 +15,7 @@ import { jsPDF } from "jspdf";
  * @param {boolean} [voucherData.apply_tax=false] - Whether to apply 10% tax deduction
  */
 
-export function generateVoucher(voucherData) {
+export function generatePDF(voucherData) {
   
   const doc = new jsPDF();
   
@@ -36,13 +36,10 @@ export function generateVoucher(voucherData) {
   const tax = apply_tax ? amount * 0.10 : 0;
   const total = amount - tax;
   
-  // Format amounts (PHP format with comma thousands separator and dot decimal)
-  function formatAmount(n) {
-    return `PHP ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
-  const totalFormatted = formatAmount(total);
-  const taxFormatted = formatAmount(tax);
-  const amountFormatted = formatAmount(amount);
+  // Format amounts (PHP format with space thousands separator and comma decimal)
+  const totalFormatted = `PHP ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+  const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+  const amountFormatted = `PHP ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
   
   // Generate date
   const date = new Date().toLocaleDateString('en-GB', { 
@@ -189,8 +186,6 @@ export function generateVoucher(voucherData) {
   doc.setFont("Times", "bold");
   doc.setFontSize(10);
   doc.text(authorized_rep, 57.5, signatureY + 34, { align: "center" });
-  // Underline for Authorized Representative
-  doc.line(32, signatureY + 36, 83, signatureY + 36);
   doc.setFont("Times", "normal");
   doc.setFontSize(9);
   doc.text("Signature over Printed Name", 57.5, signatureY + 40, { align: "center" });
@@ -207,8 +202,6 @@ export function generateVoucher(voucherData) {
   doc.setFont("Times", "bold");
   doc.setFontSize(10);
   doc.text(approver, 152.5, signatureY + 34, { align: "center" });
-  // Underline for Approver
-  doc.line(127, signatureY + 36, 178, signatureY + 36);
   doc.setFont("Times", "normal");
   doc.setFontSize(9);
   doc.text("Signature over Printed Name", 152.5, signatureY + 40, { align: "center" });
@@ -231,8 +224,6 @@ export function generateVoucher(voucherData) {
   doc.setFontSize(12);
   doc.text(totalFormatted, 152.5, receiptY + 28, { align: "center" });
   doc.text(payee, 152.5, receiptY + 58, { align: "center" });
-  // Underline for Payee
-  doc.line(127, receiptY + 60, 178, receiptY + 60);
 
   doc.setFont("Times", "normal");
   doc.setFontSize(8);
@@ -243,3 +234,21 @@ export function generateVoucher(voucherData) {
   // Save the PDF
   doc.save(`voucher_${dv_no.replace("/", "-")}.pdf`);
 }
+
+// Example usage:
+/*
+const voucherData = {
+  payee: "John Doe",
+  address: "123 Main St, City",
+  dv_no: "SO-25-002",
+  mode: "Check",
+  charge: "Office Supplies",
+  particulars: "Purchase of office materials and supplies",
+  authorized_rep: "Jane Smith",
+  approver: "Robert Johnson",
+  amount: 5000.00,
+  apply_tax: true
+};
+
+generateVoucher(voucherData);
+*/

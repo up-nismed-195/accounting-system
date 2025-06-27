@@ -145,24 +145,8 @@
                     <option class="" value={value}>{title}</option>
                 {/each}
             </select>
-            <!-- svelte-ignore event_directive_deprecated -->
-            <!-- <button
-                class="rounded px-2 py-2.5 bg-secondary hover:bg-blue-800 flex items-center justify-center sort-arrow-btn shadow-"
-                on:click={() => sortOrder = sortOrder === "ascending" ? "descending" : "ascending"}
-                aria-label="Toggle sort order"
-            >
-                {#if sortOrder === "ascending"}
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <polygon points="10,6 15,13 5,13" fill="#ffffff"/>
-                    </svg>
-                {:else}
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <polygon points="10,14 15,7 5,7" fill="#ffffff"/>
-                    </svg>
-                {/if}
-            </button> -->
+
         </div>
-        <!-- End Sort by UI -->
 
         {/if}    
     </div>
@@ -221,7 +205,7 @@
         `${liquidation.net_amount}.00`,
         liquidation.remarks,
     ] as entry}
-        <td class="px-2 py-4 max-w-[200px]">
+        <td class="px-2 py-4 max-w-[200px] break-words">
             {entry}
         </td>
     {/each}
@@ -236,7 +220,7 @@
 
 <!-- ALL PROJECTS -->
 
-<div class="flex justify-start items-center gap-4 mt-10">
+<div class="flex justify-start items-center gap-4 mt-12">
     <h1 class="text-3xl font-semibold">All Projects</h1>
     <div class="-mx-1.5 py-3 text-black/30">•</div>
     <button
@@ -275,13 +259,12 @@
         {column}
     </th>
     {/each}
-
 </tr>
 </thead>
 <tbody>
 {#each projects as project}
     <tr class="bg-white border-b  border-gray-200 hover:bg-gray-50 ">
-        <td class="px-6 py-3 text-gray-900 whitespace-nowrap ">
+        <td class="px-6 py-3 whitespace-nowrap ">
             {project.code}
         </td>
         <td class="px-6 py-3">
