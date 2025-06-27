@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { applyAction } from "$app/forms";
-	import { onMount } from "svelte";
+	
   import Row from "./Row.svelte";
   import { rows } from "./data.svelte";
   import { generateRandomVoucherData } from "./helpers";
@@ -57,9 +57,28 @@
       generateVoucher(data);
     });
   }
+
+  function saveAllVouchers() {
+    
+  }
   
-  let projects = ["UNICEF", "NISMED"]
-  selectedProject = projects[0]
+  // =======
+  // onMount
+  // =======
+
+  import { onMount } from "svelte";
+  import { supabase } from "$lib/supabaseClient";
+
+  let projects: Project[] = $state([])
+  
+  onMount(async () => {
+    const { data } = await supabase
+        .from("project_summaries")
+        .select();
+
+    projects = (data ?? []).map(item => item.code)
+    selectedProject = projects[0]
+  })
 </script>
 
 <div class="flex justify-between items-start gap-5">
@@ -90,12 +109,20 @@
       >
         Add Row
       </button>
+      
       <button
             type="button"
             class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
             onclick={generateAllVouchers}
       >
-        Generate All Vouchers
+        Download Vouchers
+      </button>
+      <button
+            type="button"
+            class="border text-white bg-cyan-600 hover:bg-cyan-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+            onclick={saveAllVouchers}
+      >
+        Save Vouchers
       </button>
     </div>
   </div>
@@ -116,6 +143,7 @@
     <input bind:value={approver} class="border-b   border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2"  type="text">
   </div>
 </div>
+
 <!--
   ===============
   TABLE
