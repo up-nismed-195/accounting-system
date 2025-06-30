@@ -12,7 +12,7 @@ import { jsPDF } from "jspdf";
  * @param {string} voucherData.authorized_rep - Name of authorized representative
  * @param {string} voucherData.approver - Name of the approver
  * @param {number} voucherData.amount - Amount before tax
- * @param {boolean} [voucherData.apply_tax=false] - Whether to apply 10% tax deduction
+ * @param {number} [voucherData.apply_tax=0] - Whether to apply 10% tax deduction
  */
 
 export function generatePDF(voucherData) {
@@ -33,7 +33,7 @@ export function generatePDF(voucherData) {
   } = voucherData;
 
   // Calculate amounts
-  const tax = apply_tax ? amount * 0.10 : 0;
+  const tax = amount * apply_tax;
   const total = amount - tax;
   
   // Format amounts (PHP format with space thousands separator and comma decimal)
@@ -98,7 +98,7 @@ export function generatePDF(voucherData) {
   doc.setFont("Times", "bold");
   doc.setFontSize(12);
   doc.text("Foundation for the Promotion of Science and Mathematics Education and Research, Inc.", 105, 20, { align: "center" });
-  doc.text("DISBURSEMENT VOUCHER", 105, 28, { align: "center" });
+  doc.text("DISBURSEMENT VOUCHER", 0, 28, { align: "center" });
 
   // Main border
   doc.rect(10, 10, 190, 240);

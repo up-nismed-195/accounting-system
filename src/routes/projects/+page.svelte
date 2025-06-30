@@ -64,8 +64,12 @@
     // Generating reports
     // ==================
 
+    import { generateReport } from './reportGenerator';
+
     function generatePDFReport() {
-        alert(JSON.stringify(liquidations))
+        // return
+        generateReport(liquidations)
+        
         // TODO: Implement actual PDF generation
     }
 

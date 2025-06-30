@@ -152,14 +152,14 @@
       class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
       onclick={saveAllVouchers}
     >
-      Save
+      Save all
     </button>
     <button
       type="button"
       class="border text-white bg-red-600 hover:bg-red-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
       onclick={generateAllVouchers}
     >
-      Download as PDF
+      Download all as PDF
     </button>
   </div>
 </div>
