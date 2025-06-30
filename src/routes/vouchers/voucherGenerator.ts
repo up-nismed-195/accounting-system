@@ -29,11 +29,11 @@ export function generatePDF(voucherData) {
     authorized_rep,
     approver,
     amount,
-    apply_tax = false
+    apply_tax
   } = voucherData;
 
   // Calculate amounts
-  const tax = amount * apply_tax;
+  const tax = amount * (0.01 * apply_tax);
   const total = amount - tax;
   
   // Format amounts (PHP format with space thousands separator and comma decimal)
@@ -98,7 +98,7 @@ export function generatePDF(voucherData) {
   doc.setFont("Times", "bold");
   doc.setFontSize(12);
   doc.text("Foundation for the Promotion of Science and Mathematics Education and Research, Inc.", 105, 20, { align: "center" });
-  doc.text("DISBURSEMENT VOUCHER", 0, 28, { align: "center" });
+  doc.text("DISBURSEMENT VOUCHER", 105, 28, { align: "center" });
 
   // Main border
   doc.rect(10, 10, 190, 240);

@@ -44,7 +44,7 @@ export function generateVoucher(data: VoucherPDF) {
         authorized_rep: data.authorized_rep,
         approver: data.approver,
         amount: +data.amount, 
-        apply_tax: !!data.tax,
+        apply_tax: data.tax,
     };
 
     generatePDF(voucherData);

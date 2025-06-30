@@ -3,6 +3,10 @@ import { jsPDF } from "jspdf"
 
 
 export function generateReport(reportData: LiquidationEntry[]) {
+    // ===================== 
+    // preamble declarations
+    // =====================
+    
     // declaring jsPDF object
     const doc = new jsPDF()
     doc.setFont("Times", "bold")
@@ -13,6 +17,7 @@ export function generateReport(reportData: LiquidationEntry[]) {
     const PAGE_WIDTH = 210
     const PAGE_HEIGHT = 297 
     const MARGIN = 20
+    const TAB_RATIO = 1.4
     let current_height = MARGIN
     type align = "left" | "center" | "right" | "justify" | undefined
 
@@ -62,15 +67,49 @@ export function generateReport(reportData: LiquidationEntry[]) {
     doc.setFont("Times", "normal")
     doc.setFontSize(10)
     doc.setTextColor("black")
+    
+    doc.setFont("Times", "bold")
+    addText("Cash Advance from FPSMER:", MARGIN, 0)
+    doc.setFont("Times", "normal")
+    addText("178,000.00", PAGE_WIDTH-MARGIN, 5, "right")
+    
+    doc.setFont("Times", "normal")
+    doc.setTextColor("#666666")
+    addText("• Requested on 9 December 2024", TAB_RATIO*MARGIN)
+    addText("• Check No.: 2000000275", TAB_RATIO*MARGIN)
+    doc.setTextColor("black")
+    doc.setFont("Times", "normal")
 
-    addText("Cash Advance from FPSMER: 178,000.00 Requested on 9 December 2024 Check No.: 2000000275")
-    addText("A. Personal Services: 155,700.00", 1.2 * MARGIN)
-    addText("B. MOOE: 5,000.00", 1.2 * MARGIN)
-    addText("C. Tax withheld: 17,300.00", 1.2 * MARGIN, 10)
+    doc.setFont("Times", "semibold")
+    addText("A. Personal Services", TAB_RATIO*MARGIN, 0)
+    doc.setFont("Times", "normal")
+    addText("155,700.00", PAGE_WIDTH-MARGIN, 5, "right")
 
-    addText("Less expenses incurred (see summary of expenses below)", MARGIN, 0)
-    addText("Less expenses incurred (see summary of expenses below)", MARGIN, 0)
-   
-    doc.save(`sample.pdf`);
+    doc.setFont("Times", "medium")
+    addText("B. MOOE", TAB_RATIO*MARGIN, 0)
+    doc.setFont("Times", "normal")
+    addText("5,000.00", PAGE_WIDTH-MARGIN, 5, "right")
 
+    doc.setFont("Times", "medium")
+    addText("C. Tax withheld", TAB_RATIO*MARGIN, 0)
+    doc.setFont("Times", "normal")
+    addText("17,300.00", PAGE_WIDTH-MARGIN, 7, "right")
+
+    // doc.setFont("Times", "bold");
+    addText("Less expenses incurred (see summary of expenses below):", MARGIN, 0)
+    // doc.setFont("Times", "normal");
+    addText("178,000.00", PAGE_WIDTH-MARGIN, 4, "right")
+    
+    addLine()
+
+    doc.setFont("Times", "bold");
+    addText("Summary of expenses incurred", MARGIN)
+    doc.setFont("Times", "normal");
+
+    for (const entry of reportData) {
+        addText(`${entry.dv_no}, ${entry.payee_name}`)
+        
+    }
+    
+    doc.save(`sample.pdf`);   
 }
