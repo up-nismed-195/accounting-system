@@ -1,4 +1,4 @@
-import { generatePDF } from "./voucherGenerator"
+import { generatePDF } from "../voucherGenerator"
 
 function generateRandomString(length: number) {
     let string = ""
