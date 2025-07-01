@@ -31,6 +31,8 @@ export function generateReport(reportData: LiquidationEntry[]) {
         doc.line(x, current_height, PAGE_WIDTH-x, current_height); // from (20,35) to (190,35)
         current_height += y
     }
+
+    // function addVoucherEntry() {}
     
     // deriving data
     const project_code = reportData[0].code 
@@ -103,13 +105,39 @@ export function generateReport(reportData: LiquidationEntry[]) {
     addLine()
 
     doc.setFont("Times", "bold");
-    addText("Summary of expenses incurred", MARGIN)
-    doc.setFont("Times", "normal");
+    addText("Summary of expenses incurred", MARGIN, 7)
+    
+    doc.text(`Personnel Services`, MARGIN, current_height)
+    doc.text("155,700.00", PAGE_WIDTH-MARGIN, current_height, {align: "right"})
+    current_height += 6
 
+    doc.setFontSize(8)
+    doc.text(`DV No.`,1*MARGIN, current_height)
+    doc.text(`Payee`, 2*MARGIN, current_height)
+    doc.text(`Gross`, 5*MARGIN, current_height)
+    doc.text(`10% Tax`, 6*MARGIN, current_height)
+    doc.text(`Next`, 7*MARGIN, current_height)
+    // doc.text("Total", 8*MARGIN, current_height)
+    doc.text(`Remarks`, 8*MARGIN, current_height)
+    doc.setFont("Times", "normal")
+    current_height+= 6
+    
     for (const entry of reportData) {
-        addText(`${entry.dv_no}, ${entry.payee_name}`)
-        
+        // dv no, patriculars, gross, tax, net amount, total, remarks
+        // addText(`${entry.dv_no}, ${entry.payee_name}`)
+        doc.text(`${entry.dv_no}`,1*MARGIN, current_height)
+        doc.text(`${entry.payee_name}`, 2*MARGIN, current_height)
+        doc.text(`${entry.gross}.00`, 5*MARGIN, current_height)
+        doc.text(`${entry.amount_taxed}.00`, 6*MARGIN, current_height)
+        doc.text(`${entry.net_amount}.00`, 7*MARGIN, current_height)
+        doc.text(`${entry.remarks}`, 8*MARGIN, current_height)
+
+        current_height += 6
     }
+
+    doc.text(`Personnel Services`, MARGIN, current_height)
+    doc.text("155,700.00", PAGE_WIDTH-MARGIN, current_height, {align: "right"})
+    current_height += 6
     
     doc.save(`sample.pdf`);   
 }

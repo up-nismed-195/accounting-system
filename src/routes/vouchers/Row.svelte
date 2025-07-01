@@ -34,7 +34,6 @@
   // ==============
 
   const keys = Object.keys(row)
-  
 
   function deleteRow() {
     $rows = $rows.filter(r => r.id !== row.id);
@@ -231,8 +230,6 @@
     >
       Save
     </button>
-
-    
   </div>
   </td>
 </tr>
