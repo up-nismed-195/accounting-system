@@ -51,17 +51,17 @@
       const data = {
           name: row.name,
           address: row.address,
-          particulars: row.particulars,
           dv_no: dv_no,
-          project_name: selectedProject,
+          particulars: row.particulars,
           mode: row.mode,
           remarks: row.remarks,
           amount: row.amount,
           tax: row.tax,
+          project_name: selectedProject,
+          date: Date.now().toString(),
           total: row.amount - (0.01 * row.tax * row.amount),
           authorized_rep: authorizedRep,
           approver: approver,
-          date: Date.now().toString(),
         };
       generateVoucher(data);
     });

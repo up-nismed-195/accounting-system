@@ -42,7 +42,13 @@
   function updateValue(key: string, current: string, value: any) {
     $rows = $rows.map(r => {
       if (r.id === row.id) {
-        console.log("key", key)
+        // Special handling for tax checkbox
+        if (key === "tax") {
+          return {
+            ...r,
+            tax: value ? 10 : 0,
+          };
+        }
         return { 
           name: key == "name" ? value : r.name,
           address: key == "address" ? value : r.address,
@@ -52,7 +58,7 @@
           mode: key == "mode" ? value : r.mode,
           remarks: key == "remarks" ? value : r.remarks,
           amount: key == "amount" ? value : r.amount,
-          tax: key == "tax" ? value : r.tax,
+          tax: r.tax,
         };
       } else {
         return r;
@@ -200,10 +206,12 @@
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
-    <input type="number" 
-      oninput={e => updateValue("tax", row.tax, (e.target as HTMLInputElement).value)}
-      value={row.tax}
-      class="w-full"
+    <!-- Tax as checkbox: checked means 10, unchecked means 0 -->
+    <input type="checkbox"
+      checked={row.tax === 10}
+      onchange={e => updateValue("tax", row.tax, (e.target as HTMLInputElement).checked)}
+      class="w-5 h-5 align-middle"
+      title="Apply 10% tax"
     >
   </td>
  
