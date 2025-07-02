@@ -26,7 +26,7 @@
 
   $effect(() => { console.log(summaries)})
 
-  import { padZeroes } from './helpers'
+  import { padZeroes } from './helpers.js'
 
   let voucherIndex = $derived(summaries[project] + index + 1)
   let dv_no = $derived(`${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
@@ -245,7 +245,7 @@
     <button
       type="button"
       class="border text-white bg-primary hover:bg-green-900 font-medium rounded-lg text-sm px-2 py-2"
-      onclick={() => saveToDatabase(row)}
+      onclick={() => saveToDatabase()}
     >
       Save
     </button>

@@ -63,6 +63,7 @@
           total: row.amount - (0.01 * row.tax * row.amount),
           authorized_rep: authorizedRep,
           approver: approver,
+
         };
       generateVoucher(data);
     });
@@ -78,13 +79,17 @@
 
   import { onMount } from "svelte";
   import { supabase } from "$lib/supabaseClient";
-
+  import { projectSummaries } from "./projectSummaries";
  
 
   onMount(async () => {
     await loadProjects()
-    // console.log("summaries", summaries)
-    // console.log("projects", projects)
+    const { error, data: summaries } = await supabase
+        .from("project_summaries")
+        .select()
+    
+    projectSummaries.set(summaries)
+    // alert(JSON.stringify($projectSummaries))
   })
 
   // ====================
