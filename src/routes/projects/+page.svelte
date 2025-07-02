@@ -20,7 +20,6 @@
     $effect(() => { 
         if (selectedProject) {
             loadLiquidations(selectedProject, sortBy, sortOrder).then(() => {
-                console.log(liquidations)
             });
         }
     })
@@ -52,9 +51,9 @@
         liquidationsLoading.set(true)
         const { data } = await supabase
             .from("liquidations")
-            .select()
-            .eq("code", selectedProject)
-            .order(sortBy, {ascending: sortOrder === 'ascending'})
+            .select()   
+            .eq("project_code", selectedProject)
+            // .order(sortBy, {ascending: sortOrder === 'ascending'})
 
         liquidations = data ?? []
         liquidationsLoading.set(false)
@@ -68,6 +67,7 @@
 
     function generatePDFReport() {
         // return
+        // alert(JSON.stringify(liquidations[0]))
         generateReport(liquidations)
         
         // TODO: Implement actual PDF generation

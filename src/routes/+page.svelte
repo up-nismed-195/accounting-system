@@ -16,7 +16,6 @@ import { generateVoucher } from "./voucherGenerator";
         apply_tax: false,
     });
 
-    console.log("yes")
   }
 </script>
 

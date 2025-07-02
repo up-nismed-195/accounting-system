@@ -35,7 +35,7 @@ export function generateReport(reportData: LiquidationEntry[]) {
     // function addVoucherEntry() {}
     
     // deriving data
-    const project_code = reportData[0].code 
+    const project_code = reportData[0].project_code 
     const total = 178000
 
     // ==================

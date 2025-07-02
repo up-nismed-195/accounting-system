@@ -31,7 +31,6 @@
   let menuPosition = $state({ x: 0, y: 0 });
   
   function toggleActions(id: string, event: MouseEvent) {
-    console.log('Toggling actions for ID:', id);
     
     // Always close any open menu first
     if (openActionId === id) {
@@ -48,7 +47,6 @@
       }
       openActionId = id; // This will close any other open menu automatically
     }
-    console.log('openActionId is now:', openActionId);
   }
 
   // Close menu when clicking outside or on any action
@@ -279,7 +277,7 @@
         }}
         class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
       >
-        Save as PDF
+        Download as PDF
       </button>
       <button
         onclick={(e) => {
@@ -306,7 +304,7 @@
         }}
         class="dropdown-item block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left transition-colors"
       >
-        Edit
+        Save to database
       </button>
     </div>
   </div>

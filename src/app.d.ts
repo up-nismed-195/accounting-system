@@ -20,7 +20,7 @@ declare global {
 	}
 	
 	interface LiquidationEntry {
-		code: string,
+		project_code: string,
 		project_name: string,
 		dv_no: string,
 		voucher_date: string,
