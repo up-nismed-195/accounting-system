@@ -33,14 +33,13 @@ export function padZeroes(targetDigits: number, number: number): string {
     return padded
 }
 
-export async function generateVoucher(data: VoucherPDF) {
-    // calls every time; TODO: put in a store
-    const { error, data: summaries } = await supabase
-        .from("project_summaries")
-        .select()
+import { projectSummaries } from "./projectSummaries"
+import { get } from "svelte/store"
 
+export async function generateVoucher(data: VoucherPDF) {
+    let summaries = get(projectSummaries)
     let projectName = ""
-    summaries?.forEach(summary => {
+    summaries.forEach(summary => {
         if (summary.code == data.project_name) {
             projectName = summary.name
         }

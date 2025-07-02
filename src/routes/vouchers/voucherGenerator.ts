@@ -154,6 +154,7 @@ export function generatePDF(voucherData) {
   // Signature sections
   const signatureY = currentY + 12;
   
+  // comment
   // Section A - Authorized Representative
   doc.setFont("Times", "bold");
   doc.rect(10, signatureY, 95, 50);
