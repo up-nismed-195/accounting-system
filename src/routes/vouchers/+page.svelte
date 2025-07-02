@@ -51,6 +51,7 @@
       const data = {
           name: row.name,
           address: row.address,
+          // svelte-ignore state_referenced_locally
           dv_no: dv_no,
           particulars: row.particulars,
           mode: row.mode,

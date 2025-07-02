@@ -182,12 +182,20 @@
     >
   </td>
   <td class="px-2 py-3 break-text break-all w-[100px]">
-    <input type="text" 
+    <!-- <input type="text" 
       oninput={e => updateValue("mode", row.mode, (e.target as HTMLInputElement).value)}
       value={row.mode}
       class="w-full"
       placeholder="Cash..."
+    > -->
+    <select
+      value={row.mode}
+      onchange={e => updateValue("mode", row.mode, (e.target as HTMLSelectElement).value)}
+      class="w-full"
     >
+      <option value="Cash" selected>Cash</option>
+      <option value="GCash">GCash</option>
+    </select>
   </td>
   <td class="px-2 py-3 break-text break-all w-[150px]">
     <input type="text" 

@@ -16,7 +16,7 @@ export function generateRandomVoucherData(): VoucherEntry{
         name: "",
         address: "",  
         particulars: "", 
-        mode: "", 
+        mode: "Cash", 
         remarks: "",
         amount: 0, 
         tax: 0, 
