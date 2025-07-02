@@ -24,6 +24,8 @@
   let approver = $derived(commonInfo.approver)
   let summaries = $derived(commonInfo.summaries)
 
+  $effect(() => { console.log(summaries)})
+
   import { padZeroes } from './helpers'
 
   let voucherIndex = $derived(summaries[project] + index + 1)
@@ -74,12 +76,13 @@
 	import { supabase } from '$lib/supabaseClient.js';
 
   function rowToPDF(row: VoucherEntry): VoucherPDF {
+    // alert(JSON.stringify(commonInfo))
     return {
       name: row.name,
       address: row.address,
       particulars: row.particulars,
       dv_no: dv_no,
-      project_name: commonInfo.selectedProject,
+      project_name: commonInfo.project,
       mode: row.mode,
       remarks: row.remarks,
       amount: row.amount,

@@ -1,3 +1,4 @@
+import { supabase } from "$lib/supabaseClient"
 import { generatePDF } from "./voucherGenerator"
 
 function generateRandomString(length: number) {
@@ -32,14 +33,26 @@ export function padZeroes(targetDigits: number, number: number): string {
     return padded
 }
 
-export function generateVoucher(data: VoucherPDF) {
-    console.log(data)
+export async function generateVoucher(data: VoucherPDF) {
+    // calls every time; TODO: put in a store
+    const { error, data: summaries } = await supabase
+        .from("project_summaries")
+        .select()
+
+    let projectName = ""
+    summaries?.forEach(summary => {
+        if (summary.code == data.project_name) {
+            projectName = summary.name
+        }
+    })
+
+    // alert(JSON.stringify(data))
     const voucherData = {
         payee: data.name,
         address: data.address,
         dv_no: data.dv_no,
         mode: data.mode,
-        charge: `projectCodes[${data.project_name}]`,
+        charge: `${projectName}`,
         particulars: data.particulars,
         authorized_rep: data.authorized_rep,
         approver: data.approver,

@@ -12,7 +12,7 @@
   let selectedProject = $state("")
   let authorizedRep = $state("")
   let approver = $state("")
-  let summaries: Record<string, number> = $state({})
+  let summaries: Record<string, {vouchers: number, name: string}> = $state({})
 
   let commonInfo = $derived({
     project: selectedProject,
@@ -44,7 +44,7 @@
   function generateAllVouchers() {
     
     $rows.forEach((row, index) => {
-      let voucherIndex = $derived(summaries[selectedProject] + index + 1)
+      let voucherIndex = $derived((summaries[selectedProject]?.vouchers ?? 0) + index + 1)
       let dv_no = $derived(`${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
 
       const BASE = 23;
@@ -104,7 +104,7 @@
 
     projects = (data ?? []).map(item => item.code)
     summaries = Object.fromEntries(
-      (data ?? []).map(item => [item.code, item.total_vouchers])
+      (data ?? []).map(item => [item.code, item.total_vouchers, item.name])
     )
 
     selectedProject = projects.length == 0 ? "" : projects[0] 
