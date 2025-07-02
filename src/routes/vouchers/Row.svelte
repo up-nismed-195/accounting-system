@@ -20,8 +20,6 @@
   let authorizedRep = $derived(commonInfo.authorizedRep)
   let approver = $derived(commonInfo.approver)
   let summaries = $derived(commonInfo.summaries)
-
-  $effect(() => { console.log(summaries)})
   let selectedProject = $derived(commonInfo.selectedProject)
 
   import { padZeroes } from './helpers'
@@ -90,14 +88,12 @@
   import { supabase } from '$lib/supabaseClient.js';
 
   function rowToPDF(row: VoucherEntry): VoucherPDF {
-    // alert(JSON.stringify(commonInfo))
     return {
       name: row.name,
       address: row.address,
       particulars: row.particulars,
       dv_no: dv_no,
       project_name: selectedProject,
-      project_name: commonInfo.project,
       mode: row.mode,
       remarks: row.remarks,
       amount: row.amount,
@@ -205,15 +201,15 @@
   
   <!-- Mode -->
   <td class="px-3 py-3 w-[10%] min-w-[100px]">
-    <input 
-      type="text" 
-      oninput={e => updateValue("mode", row.mode, e.target.value)}
+    <select
+      onchange={e => updateValue("mode", row.mode, e.target.value)}
       value={row.mode}
-      class="w-full px-2 py-1 border border-transparent hover:border-blue-300 rounded"
-      placeholder="Mode..."
+      class="w-full px-2 py-1 border border-transparent hover:border-blue-300 rounded bg-white"
     >
-      <option value="Cash" selected>Cash</option>
+      <option value="Cash">Cash</option>
       <option value="GCash">GCash</option>
+      <option value="Check">Check</option>
+      <option value="Bank Transfer">Bank Transfer</option>
     </select>
   </td>
   
@@ -337,7 +333,7 @@
     overflow: visible !important;
   }
 
-  input {
+  input, select {
     width: 100%;
     font-size: 13px;
     background: transparent;
@@ -345,11 +341,12 @@
   }
 
   input[type="text"], 
-  input[type="number"] {
+  input[type="number"],
+  select {
     padding: 4px 8px;
   }
 
-  input:hover {
+  input:hover, select:hover {
     background: #f8fafc;
   }
 
