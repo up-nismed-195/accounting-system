@@ -1,22 +1,6 @@
 import { jsPDF } from "jspdf";
 
-/**
- * Generates a disbursement voucher PDF
- * @param {Object} voucherData - The voucher data object
- * @param {string} voucherData.payee - Name of the payee
- * @param {string} voucherData.address - Address of the payee
- * @param {string} [voucherData.dv_no="SO-25-001"] - Disbursement voucher number
- * @param {string} voucherData.mode - Mode of payment
- * @param {string} voucherData.charge - What the expense is charged against
- * @param {string} voucherData.particulars - Description of the expense
- * @param {string} voucherData.authorized_rep - Name of authorized representative
- * @param {string} voucherData.approver - Name of the approver
- * @param {number} voucherData.amount - Amount before tax
- * @param {number} [voucherData.apply_tax=0] - Whether to apply 10% tax deduction
- */
-
 export function generatePDF(voucherData) {
-  
   const doc = new jsPDF();
   
   const {
@@ -37,9 +21,9 @@ export function generatePDF(voucherData) {
   const total = amount - tax;
   
   // Format amounts (PHP format with space thousands separator and comma decimal)
-  const totalFormatted = `PHP ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
-  const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
-  const amountFormatted = `PHP ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ',')}`;
+  const totalFormatted = `PHP ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  const amountFormatted = `PHP ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
   
   // Generate date
   const date = new Date().toLocaleDateString('en-GB', { 
@@ -48,11 +32,6 @@ export function generatePDF(voucherData) {
     year: '2-digit' 
   }).replace(/ /g, '-');
 
-  /**
-   * Converts a number to words
-   * @param {number} n - Number to convert
-   * @returns {string} Number in words
-   */
   function numberToWords(n) {
     const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven",
       "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
@@ -188,6 +167,8 @@ export function generatePDF(voucherData) {
   doc.text(authorized_rep, 57.5, signatureY + 34, { align: "center" });
   doc.setFont("Times", "normal");
   doc.setFontSize(9);
+  // ADDED LINE HERE
+  doc.line(20, signatureY + 36, 90, signatureY + 36);
   doc.text("Signature over Printed Name", 57.5, signatureY + 40, { align: "center" });
   doc.text("of Authorized Representative", 57.5, signatureY + 44, { align: "center" });
   doc.text(`Date: ${date}`, 57.5, signatureY + 48, { align: "center" });
@@ -204,6 +185,8 @@ export function generatePDF(voucherData) {
   doc.text(approver, 152.5, signatureY + 34, { align: "center" });
   doc.setFont("Times", "normal");
   doc.setFontSize(9);
+  // ADDED LINE HERE
+  doc.line(115, signatureY + 36, 185, signatureY + 36);
   doc.text("Signature over Printed Name", 152.5, signatureY + 40, { align: "center" });
   doc.text("Executive Director, FPSMER, Inc.", 152.5, signatureY + 44, { align: "center" });
   doc.text(`Date: ${date}`, 152.5, signatureY + 48, { align: "center" });
@@ -227,6 +210,8 @@ export function generatePDF(voucherData) {
 
   doc.setFont("Times", "normal");
   doc.setFontSize(8);
+  // ADDED LINE HERE
+  doc.line(120, receiptY + 60, 185, receiptY + 60);
   doc.text("Signature over Printed Name", 152.5, receiptY + 64, { align: "center" });
   doc.text("of Payee", 152.5, receiptY + 68, { align: "center" });
   doc.text(`Date: ${date}`, 152.5, receiptY + 72, { align: "center" });
@@ -234,21 +219,3 @@ export function generatePDF(voucherData) {
   // Save the PDF
   doc.save(`voucher_${dv_no.replace("/", "-")}.pdf`);
 }
-
-// Example usage:
-/*
-const voucherData = {
-  payee: "John Doe",
-  address: "123 Main St, City",
-  dv_no: "SO-25-002",
-  mode: "Check",
-  charge: "Office Supplies",
-  particulars: "Purchase of office materials and supplies",
-  authorized_rep: "Jane Smith",
-  approver: "Robert Johnson",
-  amount: 5000.00,
-  apply_tax: true
-};
-
-generateVoucher(voucherData);
-*/
