@@ -5,6 +5,8 @@
 
     let code = "";
     let title = "";
+    let authorized_rep = ""
+    let approver = ""
 
     function handleCancel() {
         onCancel();
@@ -13,7 +15,7 @@
     async function handleSubmit() {
         const { data, error } = await supabase
             .from('project')
-            .upsert({ code: code, name: title })
+            .upsert({ code: code, name: title, authorized_rep: authorized_rep, approver: approver})
             .select()
         // TODO: Add your submit logic here (e.g., call Supabase)
         // Example: await supabase.from("project").insert({ code, name: title });
@@ -45,6 +47,28 @@
             placeholder="e.g. UNICEF Education Project"
         />
     </div>
+    <div class="mt-2">
+        <label for="title" class="block text-sm font-medium mb-1">Authorized Representative</label>
+        <input
+            name="title"
+            type="text"
+            bind:value={authorized_rep}
+            class="border-black/50 bg-primary/5 border rounded px-3 py-2 w-full"
+            required
+            placeholder="e.g. Juan Dela Cruz"
+        />
+    </div>
+    <div class="mt-2">
+        <label for="title" class="block text-sm font-medium mb-1">Approver</label>
+        <input
+            name="title"
+            type="text"
+            bind:value={approver}
+            class="border-black/50 bg-primary/5 border rounded px-3 py-2 w-full"
+            required
+            placeholder="e.g. Juana Dela Cruz"
+        />
+    </div>
     <div class="flex flex-row-reverse gap-2.5 mt-8">
         <button
             type="submit"
@@ -59,5 +83,7 @@
         >
             Cancel
         </button>
+
+        
     </div>
 </form>

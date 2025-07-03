@@ -14,7 +14,6 @@
         {name: "Vouchers", link: "/vouchers"},
         {name: "Projects", link: "/projects"},
         {name: "History", link: "/history"},
-        {name: "Reports", link: "/reports"},
       ] as item}
       <a href={item.link} class="nav-link {page.url.pathname === item.link ? 'active' : ''}">
         {item.name}

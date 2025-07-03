@@ -40,7 +40,9 @@
 
   import { padZeroes } from "./helpers";
 
+  
   function generateAllVouchers() {
+    // console.log($projectSumma  ries)
     
     $rows.forEach((row, index) => {
       let voucherIndex = $derived((summaries[selectedProject]?.vouchers ?? 0) + index + 1)
@@ -83,11 +85,13 @@
 
   onMount(async () => {
     await loadProjects()
-    const { error, data: summaries } = await supabase
+    const { error, data } = await supabase
         .from("project_summaries")
         .select()
     
-    projectSummaries.set(summaries)
+    // alert(JSON.stringi-*fy(summaries))
+    projectSummaries.set(data ?? [])
+    // console(summaries)
     // alert(JSON.stringify($projectSummaries))
   })
 
@@ -108,12 +112,13 @@
 
     projects = (data ?? []).map(item => item.code)
     summaries = Object.fromEntries(
-      (data ?? []).map(item => [item.code, item.total_vouchers, item.name])
+      (data ?? []).map(item => [item.code, item.total_vouchers, item.name, item.authorized_rep, item.approver])
     )
 
     selectedProject = projects.length == 0 ? "" : projects[0] 
     $projectsLoading = false
   }
+  
 </script>
 
 <div class="flex justify-between items-start gap-5">

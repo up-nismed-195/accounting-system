@@ -306,7 +306,7 @@
 
 {#if showNewProjectModal}
     <div class="fixed inset-0 flex items-center justify-center bg-black/40">
-        <div class="bg-white rounded-lg shadow-lg p-8 min-w-[320px] h-[350px] max-w-lg w-full relative
+        <div class="bg-white rounded-lg shadow-lg p-8 min-w-[320px] h-[500px] max-w-lg w-full relative
         border-2 border-primary/40">
             <button
                 class="absolute top-3 right-5 text-gray-500 hover:text-gray-800 

@@ -6,6 +6,7 @@ in general
 vouchers
 [] form checking before submission
 [] checking of dv no needs to be fixed
+[] edit dv_no
 [] form validation checking: need to use forms
 [] save function needs to be fixed (upsert is problematic)
 [] save all functions has not been implemented
@@ -16,11 +17,13 @@ vouchers
     [] 3 vouchers printed
     [] relevant error
 [] save all
-[] edit row
+
+
 
 projects
 [] capability to delete project
 [] capability to edit projects
+[] auth rep should be based on project data
 
 reports
 [] capability to edit payee details, voucher details
@@ -33,7 +36,6 @@ history
 [] capability to print corresponding voucher
 [] capability to delete from history
 [] eliminate unnecessary buttons
-
 
 database
 [] edit project reports to include MOOE, other expenses other than personnel expenses
