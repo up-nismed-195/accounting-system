@@ -2,7 +2,7 @@ import { jsPDF } from "jspdf";
 
 export function generatePDF(voucherData) {
   const doc = new jsPDF();
-  
+
   const {
     payee,
     address,
@@ -16,20 +16,18 @@ export function generatePDF(voucherData) {
     apply_tax
   } = voucherData;
 
-  // Calculate amounts
-  const tax = amount * (0.01 * apply_tax);
-  const total = amount - tax;
-  
-  // Format amounts (PHP format with space thousands separator and comma decimal)
-  const totalFormatted = `PHP ${total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  const totalAmount = parseFloat(amount);
+  const tax = totalAmount * (0.01 * apply_tax);
+  const netTotal = totalAmount - tax;
+
+  const amountFormatted = `PHP ${totalAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
   const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-  const amountFormatted = `PHP ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-  
-  // Generate date
-  const date = new Date().toLocaleDateString('en-GB', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: '2-digit' 
+  const totalFormatted = `PHP ${netTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+
+  const date = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: '2-digit'
   }).replace(/ /g, '-');
 
   function numberToWords(n) {
@@ -39,17 +37,17 @@ export function generatePDF(voucherData) {
     const scales = ["", "Thousand", "Million", "Billion"];
 
     if (n === 0) return "Zero";
-    
+
     let result = "";
     let group = 0;
-    
+
     while (n > 0) {
       const chunk = n % 1000;
       if (chunk) {
         let str = "";
         const hundreds = Math.floor(chunk / 100);
         const tensUnits = chunk % 100;
-        
+
         if (hundreds) str += ones[hundreds] + " Hundred ";
         if (tensUnits < 20) {
           str += ones[tensUnits];
@@ -64,27 +62,23 @@ export function generatePDF(voucherData) {
     return result.trim();
   }
 
-  // Convert total amount to words
-  const pesos = Math.floor(total);
-  const cents = Math.round((total - pesos) * 100);
+  const pesos = Math.floor(netTotal);
+  const cents = Math.round((netTotal - pesos) * 100);
   let words = numberToWords(pesos) + " Pesos";
   if (cents > 0) {
     words += " and " + numberToWords(cents) + " Centavos";
   }
 
-  // Start building the PDF
-  // Header
   doc.setFont("Times", "bold");
   doc.setFontSize(12);
   doc.text("Foundation for the Promotion of Science and Mathematics Education and Research, Inc.", 105, 20, { align: "center" });
   doc.text("DISBURSEMENT VOUCHER", 105, 28, { align: "center" });
 
-  // Main border
   doc.rect(10, 10, 190, 240);
 
-  // Payee and DV Number row
   doc.setFont("Times", "normal");
   doc.setFontSize(10);
+
   doc.rect(10, 35, 20, 8);
   doc.text("Payee:", 12, 41);
   doc.setFont("Times", "bold");
@@ -96,7 +90,6 @@ export function generatePDF(voucherData) {
   doc.rect(165, 35, 35, 8);
   doc.text(dv_no, 167, 41);
 
-  // Address and Date row
   doc.rect(10, 43, 20, 8);
   doc.text("Address:", 12, 49);
   doc.rect(30, 43, 105, 8);
@@ -106,56 +99,57 @@ export function generatePDF(voucherData) {
   doc.rect(165, 43, 35, 8);
   doc.text(date, 167, 49);
 
-  // Charge vs row
   doc.rect(10, 51, 20, 8);
   doc.text("Charge vs:", 12, 57);
   doc.rect(30, 51, 170, 8);
   doc.setFont("Times", "bold");
   doc.text(charge, 32, 57);
 
-  // Mode of Payment row
   doc.setFont("Times", "normal");
   doc.rect(10, 59, 30, 8);
   doc.text("Mode of Payment:", 12, 65);
   doc.rect(40, 59, 160, 8);
   doc.text(mode, 42, 65);
 
-  // Table headers
+  // Header for Particulars and Amount
   doc.setFont("Times", "bold");
-  doc.rect(10, 67, 120, 8);
-  doc.text("Particulars", 70, 73, { align: "center" });
-  doc.rect(130, 67, 70, 8);
-  doc.text("Amount", 165, 73, { align: "center" });
+  doc.rect(10, 67, 140, 8);
+  doc.text("Particulars", 80, 73, { align: "center" });
+  doc.rect(150, 67, 50, 8);
+  doc.text("Amount", 175, 73, { align: "center" });
 
-  // Particulars and amount
+  // Singular particular with wrapping
   doc.setFont("Times", "normal");
-  doc.rect(10, 75, 120, 12);
-  doc.text(particulars, 12, 83);
-  doc.rect(130, 75, 70, 12);
-  doc.text(amountFormatted, 195, 83, { align: "right" });
+  const lineHeight = 6;
+  const baseY = 75;
+  const wrappedParticular = doc.splitTextToSize(particulars.trim(), 138);
+  const height = Math.max(wrappedParticular.length * lineHeight, 18);
 
-  // Tax deduction (if applicable)
-  let currentY = 87;
+  doc.rect(10, baseY, 140, height);
+  doc.text(wrappedParticular, 12, baseY + 6);
+
+  doc.rect(150, baseY, 50, height);
+  doc.text(amountFormatted, 195, baseY + 6, { align: "right" });
+
+  let currentY = baseY + height;
+
+  // Tax and Total box (shared box under amount)
+  const summaryHeight = apply_tax ? 24 : 12;
+  doc.rect(150, currentY, 50, summaryHeight);
+
   if (apply_tax) {
-    doc.rect(10, currentY, 120, 12);
-    doc.text("Less 10% Tax", 125, currentY + 8, { align: "right" });
-    doc.rect(130, currentY, 70, 12);
+    doc.text("Less 10% Tax", 145, currentY + 8, { align: "right" });
     doc.text(taxFormatted, 195, currentY + 8, { align: "right" });
-    currentY += 12;
+    doc.setFont("Times", "bold");
+    doc.text("Total", 145, currentY + 18, { align: "right" });
+    doc.text(totalFormatted, 195, currentY + 18, { align: "right" });
+  } else {
+    doc.setFont("Times", "bold");
+    doc.text("Total", 145, currentY + 8, { align: "right" });
+    doc.text(totalFormatted, 195, currentY + 8, { align: "right" });
   }
 
-  // Total row
-  doc.setFont("Times", "bold");
-  doc.rect(10, currentY, 120, 12);
-  doc.text("Total", 125, currentY + 8, { align: "right" });
-  doc.rect(130, currentY, 70, 12);
-  doc.text(totalFormatted, 195, currentY + 8, { align: "right" });
-
-  // Signature sections
-  const signatureY = currentY + 12;
-  
-  // comment
-  // Section A - Authorized Representative
+  const signatureY = currentY + summaryHeight;
   doc.setFont("Times", "bold");
   doc.rect(10, signatureY, 95, 50);
   doc.text("A", 12, signatureY + 8);
@@ -168,13 +162,11 @@ export function generatePDF(voucherData) {
   doc.text(authorized_rep, 57.5, signatureY + 34, { align: "center" });
   doc.setFont("Times", "normal");
   doc.setFontSize(9);
-  // ADDED LINE HERE
   doc.line(20, signatureY + 36, 90, signatureY + 36);
   doc.text("Signature over Printed Name", 57.5, signatureY + 40, { align: "center" });
   doc.text("of Authorized Representative", 57.5, signatureY + 44, { align: "center" });
   doc.text(`Date: ${date}`, 57.5, signatureY + 48, { align: "center" });
 
-  // Section B - Approver
   doc.setFont("Times", "bold");
   doc.rect(105, signatureY, 95, 50);
   doc.text("B", 107, signatureY + 8);
@@ -186,23 +178,26 @@ export function generatePDF(voucherData) {
   doc.text(approver, 152.5, signatureY + 34, { align: "center" });
   doc.setFont("Times", "normal");
   doc.setFontSize(9);
-  // ADDED LINE HERE
   doc.line(115, signatureY + 36, 185, signatureY + 36);
   doc.text("Signature over Printed Name", 152.5, signatureY + 40, { align: "center" });
   doc.text("Executive Director, FPSMER, Inc.", 152.5, signatureY + 44, { align: "center" });
   doc.text(`Date: ${date}`, 152.5, signatureY + 48, { align: "center" });
 
-  // Section C - Receipt
   const receiptY = signatureY + 55;
   doc.setFont("Times", "bold");
   doc.setFontSize(10);
   doc.text("C", 12, receiptY);
   doc.setFont("Times", "normal");
   doc.setFontSize(10);
-  
-  const receiptText = `Received from the Foundation for the Promotion of Science and Mathematics Education and Research, Inc. the amount of ${words}`;
-  const receiptLines = doc.splitTextToSize(receiptText, 185);
-  doc.text(receiptLines, 12, receiptY + 10);
+
+  const receiptStart = "Received from the Foundation for the Promotion of Science and Mathematics Education and Research, Inc. the amount of ";
+  const receiptLinesStart = doc.splitTextToSize(receiptStart, 185);
+  const receiptLinesWords = doc.splitTextToSize(words, 185);
+
+  doc.text(receiptLinesStart, 12, receiptY + 10);
+  const lastLineY = receiptY + 10 + (receiptLinesStart.length - 1) * 6;
+  doc.setFont("Times", "bold");
+  doc.text(receiptLinesWords, 12, lastLineY + 6);
 
   doc.setFont("Times", "bold");
   doc.setFontSize(12);
@@ -211,12 +206,10 @@ export function generatePDF(voucherData) {
 
   doc.setFont("Times", "normal");
   doc.setFontSize(8);
-  // ADDED LINE HERE
   doc.line(120, receiptY + 60, 185, receiptY + 60);
   doc.text("Signature over Printed Name", 152.5, receiptY + 64, { align: "center" });
   doc.text("of Payee", 152.5, receiptY + 68, { align: "center" });
   doc.text(`Date: ${date}`, 152.5, receiptY + 72, { align: "center" });
 
-  // Save the PDF
   doc.save(`voucher_${dv_no.replace("/", "-")}.pdf`);
 }
