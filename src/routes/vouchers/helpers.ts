@@ -37,13 +37,16 @@ import { projectSummaries } from "./projectSummaries"
 import { get } from "svelte/store"
 
 export async function generateVoucher(data: VoucherPDF) {
+
     let summaries = get(projectSummaries)
     let projectName = ""
     summaries.forEach(summary => {
+        // alert(data.project_name)
         if (summary.code == data.project_name) {
             projectName = summary.name
         }
     })
+    
 
     // alert(JSON.stringify(data))
     const voucherData = {

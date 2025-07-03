@@ -18,6 +18,7 @@
     authorizedRep: authorizedRep,
     approver: approver,
     summaries: summaries,
+    selectedProject: selectedProject,
   })
 
   const headers = [
@@ -91,6 +92,7 @@
     
     // alert(JSON.stringi-*fy(summaries))
     projectSummaries.set(data ?? [])
+    
     // console(summaries)
     // alert(JSON.stringify($projectSummaries))
   })
@@ -114,6 +116,12 @@
     summaries = Object.fromEntries(
       (data ?? []).map(item => [item.code, item.total_vouchers, item.name, item.authorized_rep, item.approver])
     )
+
+    console.log((data ?? []).map(item => [item.code, {
+      vouchers: item.vouchers,
+      name: item.name
+    }]))
+
 
     selectedProject = projects.length == 0 ? "" : projects[0] 
     $projectsLoading = false
