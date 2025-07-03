@@ -75,6 +75,27 @@
     filteredVouchers = filtered;
   }
 
+  async function deleteVoucher(dv_no: string) {
+    const confirmed = confirm(`Are you sure you want to delete voucher ${dv_no}?`);
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("voucher")
+      .delete()
+      .eq("dv_no", dv_no);
+
+    if (error) {
+      alert("Error deleting voucher.");
+      console.error("Delete error:", error);
+      return;
+    }
+
+    vouchers = vouchers.filter(v => v.dv_no !== dv_no);
+    filteredVouchers = filteredVouchers.filter(v => v.dv_no !== dv_no);
+
+    alert(`Voucher ${dv_no} deleted.`);
+  }
+
   $effect(() => {
     if (vouchers.length > 0) {
       filterVouchers();
@@ -96,7 +117,6 @@
       <Spinner />
     {/if}
 
-    <!-- Date Filter Controls -->
     <div class="flex gap-2 items-center">
       <span class="text-sm font-medium">Filter by date:</span>
       <select 
@@ -111,7 +131,6 @@
       </select>
     </div>
 
-    <!-- Custom Range Inputs -->
     {#if dateFilter === 'custom'}
       <div class="flex gap-2 items-center">
         <input 
@@ -127,13 +146,6 @@
         />
       </div>
     {/if}
-  </div>
-
-  <!-- Actions -->
-  <div class="flex gap-2">
-    <button class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-900">Add Row</button>
-    <button class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">Save All</button>
-    <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Download PDF</button>
   </div>
 </div>
 
@@ -153,7 +165,7 @@
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Authorized Rep</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approver</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approver / Action</th>
       </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
@@ -174,7 +186,15 @@
             <td class="px-4 py-4 text-sm">{v.payment_mode || 'N/A'}</td>
             <td class="px-4 py-4 text-sm text-right">₱{parseFloat(v.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
             <td class="px-4 py-4 text-sm">{v.authorized_representative || 'N/A'}</td>
-            <td class="px-4 py-4 text-sm">{v.approver || 'N/A'}</td>
+            <td class="px-4 py-4 text-sm flex justify-between items-center gap-2">
+              {v.approver || 'N/A'}
+              <button
+                class="text-red-600 text-xs hover:underline"
+                on:click={() => deleteVoucher(v.dv_no)}
+              >
+                Delete
+              </button>
+            </td>
           </tr>
         {/each}
       {/if}
@@ -182,23 +202,9 @@
   </table>
 </div>
 
-<!-- Debug Info -->
-{#if vouchers.length > 0}
-  <div class="mt-4 p-4 bg-gray-100 rounded text-sm">
-    <h3 class="font-bold mb-2">Debug Info:</h3>
-    <p>Total vouchers loaded: {vouchers.length}</p>
-    <p>Filtered vouchers: {filteredVouchers.length}</p>
-    <p>Current filter: {dateFilter}</p>
-    <details class="mt-2">
-      <summary class="cursor-pointer">Raw data (first voucher)</summary>
-      <pre class="mt-2 overflow-auto">{JSON.stringify(vouchers[0], null, 2)}</pre>
-    </details>
-  </div>
-{/if}
-
 <style>
-:global(input:focus) {
-  outline: none;
-  border-bottom: 2px solid var(--color-secondary);
-}
+  :global(input:focus) {
+    outline: none;
+    border-bottom: 2px solid var(--color-secondary);
+  }
 </style>
