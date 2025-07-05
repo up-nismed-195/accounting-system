@@ -1,40 +1,56 @@
 <script>
-  import "../app.css"
-  import { page } from "$app/state";
-  import { onMount } from "svelte";
+  import "../app.css";
+  import { page } from "$app/stores";
+  import { derived } from "svelte/store";
+
   let { children } = $props();
+
+  // Properly define a derived store that we can use with $ syntax
+  const isLoginPage = derived(page, $page => $page.url.pathname === '/login');
 </script>
 
-<div class="layout-root font-display">
-  <header class="navbar">
-    <img src="/nismed.png" alt="NISMED Logo" class="logo" />
-    <nav class="nav-menu">
-      {#each [
-        {name: "Dashboard", link: "/dashboard"},
-        {name: "Vouchers", link: "/vouchers"},
-        {name: "Projects", link: "/projects"},
-        {name: "History", link: "/history"},
-      ] as item}
-      <a href={item.link} class="nav-link {page.url.pathname === item.link ? 'active' : ''}">
-        {item.name}
-      </a>
-      {/each}
-    </nav>
-    <div class="nav-spacer"></div>
-    <nav class="nav-help">
-      {#each [
-        {name: "How to use", link: "/how-to-use"},
-        {name: "People", link: "/people"},
-        {name: "About", link: "/about"},
-      ] as item}
-      <a href={item.link} class="nav-link">{item.name}</a>
-      {/each}
-    </nav>
-  </header>
-  <main class="main-content font-display">
-    {@render children()}
-  </main>
-</div>
+{#if !$isLoginPage}
+  <div class="layout-root font-display">
+    <header class="navbar">
+      <img src="/nismed.png" alt="NISMED Logo" class="logo" />
+      <nav class="nav-menu">
+        {#each [
+          {name: "Dashboard", link: "/dashboard"},
+          {name: "Vouchers", link: "/vouchers"},
+          {name: "Projects", link: "/projects"},
+          {name: "History", link: "/history"},
+        ] as item}
+        <a href={item.link} class="nav-link {($page.url.pathname === item.link) ? 'active' : ''}">
+          {item.name}
+        </a>
+        {/each}
+      </nav>
+      <div class="nav-spacer"></div>
+      <nav class="nav-help">
+        {#each [
+          {name: "How to use", link: "/how-to-use"},
+          {name: "People", link: "/people"},
+          {name: "About", link: "/about"},
+        ] as item}
+        <a href={item.link} class="nav-link">{item.name}</a>
+        {/each}
+
+        <!-- 🚪 Logout -->
+        <form method="POST" action="/logout">
+          <button type="submit" class="nav-link">Logout</button>
+        </form>
+      </nav>
+    </header>
+
+    <main class="main-content font-display">
+      {@render children()}
+    </main>
+  </div>
+{:else}
+  <!-- Show only login page (no nav layout) -->
+  {@render children()}
+{/if}
+
 
 <style>
 .layout-root {
@@ -86,6 +102,9 @@
   font-weight: 500;
   transition: background 0.15s;
   white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 .nav-link.active, .nav-link:hover {
   background: #e0e7ef;
@@ -94,7 +113,7 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden; /* Prevents horizontal scroll */
+  overflow-x: hidden; 
   padding: 2.5rem 5rem;
   box-sizing: border-box;
   background: #f8fafc;
