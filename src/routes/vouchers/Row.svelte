@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { rows } from './data.svelte.js';
 
-  let { row, index, commonInfo, approver, authorized_rep } = $props<{
+  let { row, index, commonInfo, approver, authorized_rep, project_name } = $props<{
     row: VoucherEntry;
     index: number;
     commonInfo: {
@@ -12,6 +12,7 @@
     };
     approver: string
     authorized_rep: string
+    project_name: string
   }>();
 
   let project = $derived(commonInfo.project)
@@ -73,12 +74,13 @@
   import { supabase } from '$lib/supabaseClient.js';
 
   function rowToPDF(row: VoucherEntry): VoucherPDF {
+    
     return {
       name: row.name,
       address: row.address,
       particulars: row.particulars,
       dv_no: dv_no,
-      project_name: selectedProject,
+      project_name: project_name,
       mode: row.mode,
       remarks: row.remarks,
       amount: row.amount,
@@ -149,7 +151,7 @@
         payment_mode: row.mode,
         voucher_date: new Date().toISOString(),
         amount: row.amount,
-        authorized_representative: authorizedRep,
+        authorized_representative: authorized_rep,
         approver: approver  
       })
       .select()

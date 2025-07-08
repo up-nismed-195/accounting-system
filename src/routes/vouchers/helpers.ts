@@ -54,7 +54,7 @@ export async function generateVoucher(data: VoucherPDF) {
         address: data.address,
         dv_no: data.dv_no,
         mode: data.mode,
-        charge: `${projectName}`,
+        charge: data.project_name,
         particulars: data.particulars,
         authorized_rep: data.authorized_rep,
         approver: data.approver,

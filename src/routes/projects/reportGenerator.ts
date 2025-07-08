@@ -71,7 +71,7 @@ export function generateReport(reportData: LiquidationEntry[]) {
     doc.setTextColor("black")
     
     doc.setFont("Times", "bold")
-    addText("Cash Advance from FPSMER:", MARGIN, 0)
+    addText("Cash Advance from FPSMER Inc.:", MARGIN, 0)
     doc.setFont("Times", "normal")
     addText("178,000.00", PAGE_WIDTH-MARGIN, 5, "right")
     

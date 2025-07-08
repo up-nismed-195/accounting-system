@@ -6,7 +6,7 @@
   import { generateRandomVoucherData } from "./helpers";
   import { generateVoucher } from "./helpers";
 
-  let data = $props();
+  // let data = $props();
 
   let selectedProject = $state("")
   
@@ -22,6 +22,7 @@
 
   let authorized_rep = $derived(projectInfo[selectedProject]?.authorized_rep)
   let approver = $derived(projectInfo[selectedProject]?.approver)
+  let project_name = $derived(projectInfo[selectedProject]?.project_name) 
 
   const headers = [
     "DV No.",
@@ -53,22 +54,20 @@
 
       const BASE = 23;
       const data = {
-          name: row.name,
-          address: row.address,
-          // svelte-ignore state_referenced_locally
-          dv_no: dv_no,
-          particulars: row.particulars,
-          mode: row.mode,
-          remarks: row.remarks,
-          amount: row.amount,
-          tax: row.tax,
-          project_name: selectedProject,
-          date: Date.now().toString(),
-          total: row.amount - (0.01 * row.tax * row.amount),
-          authorized_rep: authorizedRep,
-          approver: approver,
-
-        };
+        name: row.name,
+        address: row.address,
+        particulars: row.particulars,
+        dv_no: dv_no,
+        project_name: project_name,
+        mode: row.mode,
+        remarks: row.remarks,
+        amount: row.amount,
+        tax: row.tax,
+        total: row.amount - (0.01 * row.tax * row.amount),
+        authorized_rep: authorized_rep,
+        approver: approver,
+        date: new Date().toISOString(),
+      }
       generateVoucher(data);
     });
   }
@@ -96,7 +95,7 @@
     .select()
 
     projectInfo = Object.fromEntries(
-      (data ?? []).map(item => [item.code, { approver: item.approver, authorized_rep: item.authorized_rep }])
+      (data ?? []).map(item => [item.code, { approver: item.approver, authorized_rep: item.authorized_rep, project_name: item.name}])
     )    
   }
  
@@ -108,10 +107,11 @@
         .select()
     
     // alert(JSON.stringi-*fy(summaries))
-    projectSummaries.set(data ?? [])
+    // projectSummaries.set(data ?? [])
     
     await loadProjectInfo()
 
+    alert()
     
     
     // console(summaries)
@@ -237,7 +237,7 @@
 </thead>
 <tbody>
     {#each $rows as row, index (row.id)}
-        <Row {row} {index} {commonInfo} {approver} {authorized_rep}/>
+        <Row {row} {index} {commonInfo} {approver} {authorized_rep} {project_name}/>
     {/each}
 </tbody>
 </table>
