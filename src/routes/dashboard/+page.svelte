@@ -131,6 +131,32 @@
             a.click()
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
+
+        } catch (error) {
+            console.error(error)
+        }
+
+        try {
+            const { data, error } = await 
+            supabase
+            .from("project")
+            .select()
+
+
+
+            // console.log()
+            const jsonString = JSON.stringify(data, null, 2)
+            const blob = new Blob([jsonString], { type: "application/json "})
+            // alert(JSON.stringify(data, null, 2))
+            
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "projects.json"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
                 
         } catch (error) {
             console.error(error)

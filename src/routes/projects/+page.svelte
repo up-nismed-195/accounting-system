@@ -260,6 +260,8 @@
 		"Total vouchers",
         "Gross Total (PHP)",
 		"Net Total (PHP)",
+        "Approver",
+        "Authorized Representative",
     ] as column}
     <th scope="col" class="px-6 py-3">
         {column}
@@ -287,6 +289,12 @@
         </td>
         <td class="px-6 py-3">
             {project.net_total}.00
+        </td>
+        <td class="px-6 py-3">
+            {project.authorized_rep}.00
+        </td>
+        <td class="px-6 py-3">
+            {project.approver}.00
         </td>
     </tr>
 {/each}

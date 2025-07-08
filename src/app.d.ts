@@ -17,6 +17,9 @@ declare global {
 		net_total?: number,
 		total_payees?: number,
 		total_vouchers?: number
+		authorized_rep?: string,
+		approver?: string,
+		tax_value?: string
 	}
 	
 	interface LiquidationEntry {
