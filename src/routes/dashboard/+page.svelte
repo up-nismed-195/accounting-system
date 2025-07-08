@@ -1,5 +1,7 @@
 <script>
     import { onMount } from 'svelte';
+    import { supabase } from '$lib/supabaseClient';
+    // import { json2csv } from 'json-2-csv'
     
     // Sample data for the charts - now with dynamic values
     let salesData = [
@@ -105,6 +107,39 @@
         
         return days;
     }
+
+    async function downloadData() {
+        
+        try {
+            const { data, error } = await 
+            supabase
+            .from("voucher")
+            .select()
+
+
+
+            // console.log()
+            const jsonString = JSON.stringify(data, null, 2)
+            const blob = new Blob([jsonString], { type: "application/json "})
+            // alert(JSON.stringify(data, null, 2))
+            
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "vouchers.json"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+                
+        } catch (error) {
+            console.error(error)
+        }
+
+        
+        
+
+    }
 </script>
 
 <svelte:head>
@@ -117,17 +152,23 @@
             <!-- Dashboard Header -->
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center space-x-4">
-                    <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                    <!-- <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
                         New Voucher
-                    </button>
+                    </button> -->
                     <h1 class="text-2xl font-bold text-green-900">Accounting Dashboard</h1>
                 </div>
                 
                 <!-- Date Picker -->
-                <div class="relative">
+                <div class="relative flex gap-3">
+                    <button onclick={downloadData} class="flex justify-between items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                        Download Data
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                    </button>
                     <button 
                         class="bg-white text-green-900 px-4 py-2 rounded-lg border border-green-200 font-medium hover:bg-green-50 transition-colors flex items-center space-x-2"
-                        on:click={() => showCalendar = !showCalendar}
+                        onclick={() => showCalendar = !showCalendar}
                     >
                         <span>{formatDate(selectedDate)}</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +179,7 @@
                     {#if showCalendar}
                         <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-green-200 z-10 p-4">
                             <div class="flex items-center justify-between mb-4">
-                                <button on:click={prevMonth}>
+                                <button onclick={prevMonth}>
                                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                                     </svg>
@@ -146,7 +187,7 @@
                                 <span class="font-medium text-green-900">
                                     {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                                 </span>
-                                <button on:click={nextMonth}>
+                                <button onclick={nextMonth}>
                                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
@@ -168,7 +209,7 @@
                                     {#if day}
                                         <button 
                                             class={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${getDayClass(day)}`}
-                                            on:click={() => selectDate(day)}
+                                            onclick={() => selectDate(day)}
                                         >
                                             {day.getDate()}
                                         </button>
@@ -267,7 +308,7 @@
                     <!-- Interactive Sales Chart -->
                     <div class="grid grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                         {#each salesData as item}
-                            <div class="text-center cursor-pointer group" on:click={() => console.log(`Clicked ${item.period}`)}>
+                            <div class="text-center cursor-pointer group" onclick={() => console.log(`Clicked ${item.period}`)}>
                                 <div class="w-full h-24 bg-green-50 rounded-lg mb-2 flex items-end justify-center p-2 hover:bg-green-100 transition-colors">
                                     <div 
                                         class="w-8 h-16 rounded transition-all duration-300 group-hover:w-10 group-hover:opacity-90" 
@@ -351,7 +392,7 @@
                             </div>
                             <div 
                                 class="border-2 border-dashed border-green-300 rounded-lg p-6 mb-4 hover:bg-green-50 transition-colors cursor-pointer"
-                                on:click={() => alert('File upload dialog would open here')}
+                                onclick={() => alert('File upload dialog would open here')}
                             >
                                 <p class="text-green-700 mb-2">Drag & drop your bill here</p>
                                 <p class="text-sm text-green-600">or <button class="text-green-700 hover:underline">browse files</button></p>
@@ -419,7 +460,7 @@
                                 class={`p-4 border rounded-lg hover:shadow-sm transition-all duration-200 group flex flex-col items-center ${
                                     bank.connected ? 'border-green-400 bg-green-50' : 'border-green-200 hover:border-green-400'
                                 }`}
-                                on:click={() => connectBank(bank.name)}
+                                onclick={() => connectBank(bank.name)}
                             >
                                 <div class="text-2xl mb-2">{bank.logo}</div>
                                 <p class="text-xs font-medium text-green-900 group-hover:text-green-700 text-center">{bank.name}</p>
