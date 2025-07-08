@@ -285,16 +285,16 @@
             {project.total_vouchers}
         </td>   
          <td class="px-6 py-3">
-            {project.gross_total}.00
+            {project.gross_total}
         </td>
         <td class="px-6 py-3">
-            {project.net_total}.00
+            {project.net_total}
         </td>
         <td class="px-6 py-3">
-            {project.authorized_rep}.00
+            {project.authorized_rep}
         </td>
         <td class="px-6 py-3">
-            {project.approver}.00
+            {project.approver}
         </td>
     </tr>
 {/each}

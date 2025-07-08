@@ -9,19 +9,17 @@
   let data = $props();
 
   let selectedProject = $state("")
-  
+  let authorizedRep = $state("")
+  let approver = $state("")
   let summaries: Record<string, {vouchers: number, name: string}> = $state({})
 
   let commonInfo = $derived({
     project: selectedProject,
+    authorizedRep: authorizedRep,
+    approver: approver,
     summaries: summaries,
     selectedProject: selectedProject,
   })
-
-  let projectInfo = $state({})
-
-  let authorized_rep = $derived(projectInfo[selectedProject]?.authorized_rep)
-  let approver = $derived(projectInfo[selectedProject]?.approver)
 
   const headers = [
     "DV No.",
@@ -73,6 +71,13 @@
     });
   }
 
+  async function f() {
+    // const { data, error } = await
+    // supabase
+    // .from("table")
+    // .select()
+  }
+
   function saveAllVouchers() {
     
   }
@@ -84,24 +89,10 @@
   import { onMount } from "svelte";
   import { supabase } from "$lib/supabaseClient";
   import { projectSummaries } from "./projectSummaries";
-
-  function show(data) {
-    alert(JSON.stringify(data, null, 2))
-  }
-
-  async function loadProjectInfo() {
-    const { data, error } = await
-    supabase
-    .from("project")
-    .select()
-
-    projectInfo = Object.fromEntries(
-      (data ?? []).map(item => [item.code, { approver: item.approver, authorized_rep: item.authorized_rep }])
-    )    
-  }
  
 
   onMount(async () => {
+    await f()
     await loadProjects()
     const { error, data } = await supabase
         .from("project_summaries")
@@ -110,9 +101,8 @@
     // alert(JSON.stringi-*fy(summaries))
     projectSummaries.set(data ?? [])
     
-    await loadProjectInfo()
-
-    
+    // await loadProjectInfo()
+    // await loadProjectInfo()
     
     // console(summaries)
     // alert(JSON.stringify($projectSummaries))
@@ -124,6 +114,7 @@
 
   import Spinner from "$lib/components/Spinner.svelte";
   import { projectsLoading } from "$lib/stores/stores";
+	import { loadConfigFromFile } from "vite";
 
   let projects: string[] = $state([])
 
@@ -133,10 +124,12 @@
         .from("project_summaries")
         .select();
 
+    alert(JSON.stringify(data, null, 2))
     projects = (data ?? []).map(item => item.code)
     summaries = Object.fromEntries(
-      (data ?? []).map(item => [item.code, item.total_vouchers])
+      (data ?? []).map(item => [item.code, item.total_vouchers, item.name, item.authorized_rep, item.approver])
     )
+    // alert(JSON.stringify(data, null, 2))
 
     console.log((data ?? []).map(item => [item.code, {
       vouchers: item.vouchers,
@@ -207,15 +200,15 @@
 
 <div class="mt-4 mb-0.5 gap-2 flex items-center">
   <div class="flex justify-start gap-2">
-    <span class="font-medium text-sm">Authorized representative: {authorized_rep} </span> 
-    <!-- <input bind:value={authorizedRep} class="border-b border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2" type="text"> -->
+    <span class="font-medium text-sm mb-2">Authorized representative: </span> 
+    <input bind:value={authorizedRep} class="border-b border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2" type="text">
   </div>
 
   <div class="text-black/30">•</div>
 
   <div class="flex justify-start gap-2">
-    <span class="font-medium text-sm">Approver: {approver}</span> 
-    <!-- <input bind:value={approver} class="border-b   border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2"  type="text"> -->
+    <span class="font-medium text-sm">Approver: </span> 
+    <input bind:value={approver} class="border-b   border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2"  type="text">
   </div>
 </div>
 
@@ -237,7 +230,7 @@
 </thead>
 <tbody>
     {#each $rows as row, index (row.id)}
-        <Row {row} {index} {commonInfo} {approver} {authorized_rep}/>
+        <Row {row} {index} {commonInfo}/>
     {/each}
 </tbody>
 </table>

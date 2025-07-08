@@ -2,21 +2,19 @@
   import { onMount } from 'svelte';
   import { rows } from './data.svelte.js';
 
-  let { row, index, commonInfo } = $props<{
+  let { row, index, commonInfo, approver, authorized_rep } = $props<{
     row: VoucherEntry;
     index: number;
     commonInfo: {
       project: string,
-      authorizedRep: string,
-      approver: string,
       summaries: Record<string, number>,
       selectedProject: string
     };
+    approver: string
+    authorized_rep: string
   }>();
 
   let project = $derived(commonInfo.project)
-  let authorizedRep = $derived(commonInfo.authorizedRep)
-  let approver = $derived(commonInfo.approver)
   let summaries = $derived(commonInfo.summaries)
   let selectedProject = $derived(commonInfo.selectedProject)
 
@@ -86,7 +84,7 @@
       amount: row.amount,
       tax: row.tax,
       total: row.amount - (0.01 * row.tax * row.amount),
-      authorized_rep: authorizedRep,
+      authorized_rep: authorized_rep,
       approver: approver,
       date: new Date().toISOString(),
     }
