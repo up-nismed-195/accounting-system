@@ -1,3 +1,5 @@
+// src/routes/login/+page.server.ts
+
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { createClient } from '@supabase/supabase-js';
@@ -16,18 +18,17 @@ export const actions: Actions = {
     const email = form.get('email')?.toString() || '';
     const password = form.get('password')?.toString() || '';
 
-    console.log('Attempting login with:', { email, password }); 
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error || !data?.session) {
+      const message =
+        error?.message === 'Invalid login credentials'
+          ? 'Invalid email or password'
+          : error?.message || 'Login failed.';
 
-    console.log('Supabase response:', { data, error }); 
-
-    if (error || !data) {
-      console.log('Login failed:', error?.message || 'No user found');
-      return fail(401, { error: 'Invalid email or password' });
+      return fail(401, { error: message });
     }
 
-    console.log('Login successful for user:', data.email); 
     cookies.set('session', 'valid', {
       path: '/',
       httpOnly: true,

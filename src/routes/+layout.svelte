@@ -26,13 +26,6 @@
       </nav>
       <div class="nav-spacer"></div>
       <nav class="nav-help">
-        {#each [
-          {name: "How to use", link: "/how-to-use"},
-          {name: "People", link: "/people"},
-          {name: "About", link: "/about"},
-        ] as item}
-        <a href={item.link} class="nav-link">{item.name}</a>
-        {/each}
 
         <!-- 🚪 Logout -->
         <form method="POST" action="/logout">

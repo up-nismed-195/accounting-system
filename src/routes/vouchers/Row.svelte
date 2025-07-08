@@ -152,7 +152,7 @@
         voucher_date: new Date().toISOString(),
         amount: row.amount,
         authorized_representative: authorizedRep,
-        approver: approver
+        approver: approver  
       })
       .select()
 
