@@ -108,7 +108,7 @@
 </script>
 
 <svelte:head>
-    <title>Accounting Dashboard</title>
+    <title>UP NISMED - Accounting</title>
 </svelte:head>
 
 <div class="dashboard-bg min-h-screen">
