@@ -18,12 +18,7 @@ export const actions: Actions = {
 
     console.log('Attempting login with:', { email, password }); 
 
-    const { data, error } = await supabase
-      .from('users')
-      .select()
-      .eq('email', email)
-      .eq('password', password)
-      .single();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     console.log('Supabase response:', { data, error }); 
 
