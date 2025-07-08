@@ -5,7 +5,6 @@
 
   let { children } = $props();
 
-  // Properly define a derived store that we can use with $ syntax
   const isLoginPage = derived(page, $page => $page.url.pathname === '/login');
 </script>
 
