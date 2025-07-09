@@ -14,13 +14,13 @@ export function generatePDF(voucherData) {
     approver,
     amount,
     apply_tax,
-    tax_rate = 0  // Add tax_rate parameter
+    tax_rate
   } = voucherData;
 
   const totalAmount = parseFloat(amount);
   const taxRate = parseFloat(tax_rate) || 0;  // Use the passed tax rate
   const tax = totalAmount * (0.01 * taxRate);
-  const netTotal = totalAmount - tax;
+  const netTotal = apply_tax ? totalAmount - tax : totalAmount;
 
   const amountFormatted = `PHP ${totalAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
   const taxFormatted = `PHP ${tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;

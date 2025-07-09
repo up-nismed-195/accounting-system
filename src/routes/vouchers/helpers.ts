@@ -59,7 +59,8 @@ export async function generateVoucher(data: VoucherPDF) {
         authorized_rep: data.authorized_rep,
         approver: data.approver,
         amount: +data.amount, 
-        apply_tax: data.tax,
+        apply_tax: data.apply_tax,
+        tax_rate: data.tax_rate,
     };
 
     generatePDF(voucherData);

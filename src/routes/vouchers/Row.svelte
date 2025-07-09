@@ -85,9 +85,8 @@
       mode: row.mode,
       remarks: row.remarks,
       amount: row.amount,
-      // Use project tax value if apply_tax is true, otherwise 0
-      tax: row.apply_tax ? projectTaxValue : 0,
-      total: row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0),
+      apply_tax: row.apply_tax,
+      tax_rate: projectTaxValue,
       authorized_rep: authorized_rep,
       approver: approver,
       date: new Date().toISOString(),

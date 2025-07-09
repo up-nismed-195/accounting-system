@@ -58,7 +58,8 @@ declare global {
 		mode: string,
 		remarks: string,
 		amount: number,
-		tax: number,
+		// tax: number,
+		apply_tax: boolean
 	}
 
 	interface VoucherPDF extends Pick<VoucherEntry, 
@@ -69,11 +70,11 @@ declare global {
 		| "mode" 
 		| "remarks" 
 		| "amount" 
-		| "tax"
 	> {
+		tax_rate: number,
+		apply_tax: boolean,
 		project_name: string,
 		date: string,	
-		total: number,
 		authorized_rep: string,
 		approver: string,
 	}

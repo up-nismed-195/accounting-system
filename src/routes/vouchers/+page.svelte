@@ -10,9 +10,9 @@
 
   let selectedProject = $state("")
   
-  let summaries: Record<string, {vouchers: number, name: string}> = $state({})
+  let summaries: Record<string, number> = $state({})
 
-  let projectInfo = $state({})
+  let projectInfo: Record<string, { approver?: string; authorized_rep?: string; tax_value?: number }> = $state({})
 
   let commonInfo = $derived({
     project: selectedProject,
@@ -22,9 +22,12 @@
   })
 
   
+  
 
   let authorized_rep = $derived(projectInfo[selectedProject]?.authorized_rep)
   let approver = $derived(projectInfo[selectedProject]?.approver)
+  // svelte-ignore state_referenced_locally
+    let tax_value = projectInfo[selectedProject]?.tax_value || 0;
 
   const headers = [
     "DV No.",
@@ -39,9 +42,9 @@
 
   // Auto-save function for new rows
   async function saveRowToDatabase(row: VoucherEntry) {
-    const voucherIndex = (summaries[selectedProject]?.vouchers ?? 0) + $rows.length;
-    const dv_no = `${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`;
-    
+    let voucherIndex = commonInfo.summaries[commonInfo.selectedProject] + index + 1
+    let dv_no = $derived(`${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
+
     // Save payee first
     const { data: payeeData, error: payeeError } = await supabase
       .from("payee")
@@ -71,7 +74,7 @@
       console.log("Row saved successfully");
     }
 
-    await loadProjects(); // Refresh summaries
+    // await loadProjects(); // Refresh summaries
   }
   
   async function addRow() {      
@@ -89,27 +92,46 @@
 
   function generateAllVouchers() {
     $rows.forEach((row, index) => {
-      let voucherIndex = $derived((summaries[selectedProject]?.vouchers ?? 0) + index + 1)
+      // show(commonInfo.summaries[commonInfo.selectedProject])
+      let voucherIndex = commonInfo.summaries[commonInfo.selectedProject] + index + 1
       let dv_no = $derived(`${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
 
-      const projectTaxValue = projectInfo[selectedProject]?.tax_value || 0;
-      
-      const data = {
-          name: row.name,
-          address: row.address,
-          dv_no: dv_no,
-          particulars: row.particulars,
-          mode: row.mode,
-          remarks: row.remarks,
-          amount: row.amount,
-          tax: row.apply_tax ? projectTaxValue : 0,  // Use project tax if apply_tax is true
-          project_name: selectedProject,
-          date: Date.now().toString(),
-          total: row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0),
-          authorized_rep: authorized_rep,
-          approver: approver,
-        };
+      data = {
+        name: row.name,
+        address: row.address,
+        particulars: row.particulars,
+        dv_no: dv_no,
+        project_name: selectedProject,
+        mode: row.mode,
+        remarks: row.remarks,
+        amount: row.amount,
+        apply_tax: row.apply_tax,
+        tax_rate: commonInfo.projectTaxValue,
+        authorized_rep: authorized_rep,
+        approver: approver,
+        date: new Date().toISOString(),
+      }
+
       generateVoucher(data);
+
+      return  
+      
+      return {
+        name: row.name,
+        address: row.address,
+        particulars: row.particulars,
+        dv_no: dv_no,
+        project_name: selectedProject,
+        mode: row.mode,
+        remarks: row.remarks,
+        amount: row.amount,
+        apply_tax: row.apply_tax,
+        tax_rate: projectTaxValue,
+        authorized_rep: authorized_rep,
+        approver: approver,
+        date: new Date().toISOString(),
+      }
+      
     });
   }
 
@@ -282,7 +304,7 @@
 </thead>
 <tbody>
     {#each $rows as row, index (row.id)}
-        <Row {row} {index} {commonInfo} {approver} {authorized_rep}/>
+        <Row {row} {index} {commonInfo} {approver} {authorized_rep} {tax_value}/>
     {/each}
 </tbody>
 </table>
