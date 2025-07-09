@@ -2,22 +2,23 @@
   import { onMount } from 'svelte';
   import { rows } from './data.svelte.js';
 
-  let { row, index, commonInfo, approver, authorized_rep, project_name } = $props<{
+  let { row, index, commonInfo, approver, authorized_rep } = $props<{
     row: VoucherEntry;
     index: number;
     commonInfo: {
       project: string,
       summaries: Record<string, number>,
-      selectedProject: string
+      selectedProject: string,
+      projectTaxValue: number  // Added tax value from project
     };
     approver: string
     authorized_rep: string
-    project_name: string
   }>();
 
   let project = $derived(commonInfo.project)
   let summaries = $derived(commonInfo.summaries)
   let selectedProject = $derived(commonInfo.selectedProject)
+  let projectTaxValue = $derived(commonInfo.projectTaxValue)  // Get tax value from project
 
   import { padZeroes } from './helpers'
   let voucherIndex = $derived(summaries[project] + index + 1)
@@ -61,8 +62,9 @@
   function updateValue(key: string, current: string, value: any) {
     $rows = $rows.map(r => {
       if (r.id === row.id) {
-        if (key === "tax") {
-          return { ...r, tax: value ? 10 : 0 };
+        if (key === "apply_tax") {
+          // Now it's a boolean that determines if project tax is applied
+          return { ...r, apply_tax: value };
         }
         return { ...r, [key]: value };
       }
@@ -74,18 +76,18 @@
   import { supabase } from '$lib/supabaseClient.js';
 
   function rowToPDF(row: VoucherEntry): VoucherPDF {
-    
     return {
       name: row.name,
       address: row.address,
       particulars: row.particulars,
       dv_no: dv_no,
-      project_name: project_name,
+      project_name: selectedProject,
       mode: row.mode,
       remarks: row.remarks,
       amount: row.amount,
-      tax: row.tax,
-      total: row.amount - (0.01 * row.tax * row.amount),
+      // Use project tax value if apply_tax is true, otherwise 0
+      tax: row.apply_tax ? projectTaxValue : 0,
+      total: row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0),
       authorized_rep: authorized_rep,
       approver: approver,
       date: new Date().toISOString(),
@@ -93,6 +95,9 @@
   }
 
   function downloadAsCSV() {
+    const taxAmount = row.apply_tax ? projectTaxValue : 0;
+    const totalAmount = row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0);
+    
     const csvData = [
       ['DV Number', 'Name', 'Address', 'Particulars', 'Mode', 'Remarks', 'Amount', 'Tax (%)', 'Total', 'Project', 'Authorized Rep', 'Approver', 'Date'],
       [
@@ -103,10 +108,10 @@
         row.mode,
         row.remarks,
         row.amount,
-        row.tax,
-        row.amount - (0.01 * row.tax * row.amount),
+        taxAmount,
+        totalAmount,
         selectedProject,
-        authorizedRep,
+        authorized_rep,
         approver,
         new Date().toLocaleDateString()
       ]
@@ -114,7 +119,6 @@
 
     const csvContent = csvData.map(row => 
       row.map(field => {
-        // Escape quotes and wrap in quotes if contains comma, quote, or newline
         const stringField = String(field || '');
         if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
           return `"${stringField.replace(/"/g, '""')}"`;
@@ -133,36 +137,6 @@
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    openActionId = null;
-  }
-
-  async function saveToDatabase() {
-    const { data, error } = await supabase
-      .from("payee")
-      .upsert({name: row.name, address: row.address})
-      .select()
-
-    const { data: data2, error: error2 } = await supabase
-      .from("voucher")
-      .upsert({
-        dv_no: dv_no,
-        payee_name: row.name,
-        project_code: project,
-        payment_mode: row.mode,
-        voucher_date: new Date().toISOString(),
-        amount: row.amount,
-        authorized_representative: authorized_rep,
-        approver: approver  
-      })
-      .select()
-
-    if (data && data2) {
-      alert("Saved successfully");
-    } else {
-      alert("Error saving data");
-    }
-
-    await loadProjects();
     openActionId = null;
   }
 
@@ -204,7 +178,7 @@
   </td>
 
   <!-- Address -->
-  <td class="px-3 py-3 w-[25%] min-w-[200px]">
+  <td class="px-3 py-3 w-[23%] min-w-[180px]">
     <input 
       type="text" 
       oninput={e => updateValue("address", row.address, e.target.value)}
@@ -214,8 +188,8 @@
     >
   </td>
 
-  <!-- Particulars (now a textarea) -->
-  <td class="px-3 py-3 w-[20%] min-w-[200px]">
+  <!-- Particulars (textarea) -->
+  <td class="px-3 py-3 w-[18%] min-w-[180px]">
     <textarea
       rows="3"
       oninput={e => updateValue("particulars", row.particulars, e.target.value)}
@@ -225,12 +199,12 @@
     ></textarea>
   </td>
 
-  <!-- Mode -->
-  <td class="px-3 py-3 w-[10%] min-w-[100px]">
+  <!-- Mode (smaller) -->
+  <td class="px-3 py-3 w-[8%] min-w-[80px]">
     <select
       onchange={e => updateValue("mode", row.mode, e.target.value)}
       value={row.mode}
-      class="w-full px-2 py-1 border border-transparent hover:border-blue-300 rounded bg-white"
+      class="w-full px-2 py-1 border border-transparent hover:border-blue-300 rounded bg-white text-xs"
     >
       <option value="Cash">Cash</option>
       <option value="GCash">GCash</option>
@@ -240,7 +214,7 @@
   </td>
 
   <!-- Remarks -->
-  <td class="px-3 py-3 w-[15%] min-w-[150px]">
+  <td class="px-3 py-3 w-[12%] min-w-[120px]">
     <input 
       type="text" 
       oninput={e => updateValue("remarks", row.remarks, e.target.value)}
@@ -250,8 +224,8 @@
     >
   </td>
 
-  <!-- Amount -->
-  <td class="px-3 py-3 w-[10%] min-w-[100px]">
+  <!-- Amount (bigger) -->
+  <td class="px-3 py-3 w-[12%] min-w-[120px]">
     <input 
       type="number" 
       oninput={e => updateValue("amount", row.amount, e.target.value)}
@@ -261,14 +235,14 @@
     >
   </td>
 
-  <!-- Tax -->
+  <!-- Tax (now boolean for applying project tax) -->
   <td class="px-3 py-3 w-[8%] min-w-[80px] text-center">
     <input 
       type="checkbox"
-      checked={row.tax === 10}
-      onchange={e => updateValue("tax", row.tax, e.target.checked)}
+      checked={row.apply_tax}
+      onchange={e => updateValue("apply_tax", row.apply_tax, e.target.checked)}
       class="w-5 h-5 align-middle"
-      title="Apply 10% tax"
+      title={`Apply ${projectTaxValue}% tax`}
     >
   </td>
 
@@ -299,7 +273,7 @@
       <button onclick={() => { downloadAsCSV(); }} class="dropdown-item block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 w-full text-left">Download as CSV</button>
       <button onclick={() => { duplicateRow(); }} class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Duplicate</button>
       <button onclick={() => { deleteRow(); }} class="dropdown-item block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Delete</button>
-      <button onclick={() => { saveToDatabase(); }} class="dropdown-item block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left">Save to database</button>
+      <!-- Removed "Save to database" button -->
     </div>
   </div>
 {/if}
