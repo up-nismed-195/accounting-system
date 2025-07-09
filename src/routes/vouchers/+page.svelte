@@ -11,7 +11,8 @@
   let selectedProject = $state("")
   
   let summaries: Record<string, {vouchers: number, name: string}> = $state({})
-
+  let projectInfo = $state({})
+  
   let commonInfo = $derived({
     project: selectedProject,
     summaries: summaries,
@@ -19,7 +20,7 @@
     projectTaxValue: projectInfo[selectedProject]?.tax_value || 0  // Added tax value
   })
 
-  let projectInfo = $state({})
+  
 
   let authorized_rep = $derived(projectInfo[selectedProject]?.authorized_rep)
   let approver = $derived(projectInfo[selectedProject]?.approver)
@@ -69,7 +70,7 @@
       console.log("Row saved successfully");
     }
 
-    await loadProjects(); // Refresh summaries
+    // await loadProjects(); // Refresh summaries
   }
   
   async function addRow() {      
