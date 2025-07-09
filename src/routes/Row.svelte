@@ -9,7 +9,7 @@
       project: string,
       summaries: Record<string, number>,
       selectedProject: string,
-      projectTaxValue: number
+      projectTaxValue: number  // Added tax value from project
     };
     approver: string
     authorized_rep: string
@@ -18,12 +18,11 @@
   let project = $derived(commonInfo.project)
   let summaries = $derived(commonInfo.summaries)
   let selectedProject = $derived(commonInfo.selectedProject)
-  let projectTaxValue = $derived(commonInfo.projectTaxValue)
+  let projectTaxValue = $derived(commonInfo.projectTaxValue)  // Get tax value from project
 
   import { padZeroes } from './helpers'
-  
-  // Use existing dv_no if it exists, otherwise generate new one
-  let dv_no = $derived(row.dv_no || `${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, summaries[project] + index + 1)}`)
+  let voucherIndex = $derived(summaries[project] + index + 1)
+  let dv_no = $derived(`${project}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
 
   let openActionId = $state<string | null>(null);
   let menuPosition = $state({ x: 0, y: 0 });
@@ -56,16 +55,15 @@
   });
 
   function deleteRow() {
-    if (confirm("Are you sure you want to delete this voucher?")) {
-      $rows = $rows.filter(r => r.id !== row.id);
-      openActionId = null;
-    }
+    $rows = $rows.filter(r => r.id !== row.id);
+    openActionId = null;
   }
 
   function updateValue(key: string, current: string, value: any) {
     $rows = $rows.map(r => {
       if (r.id === row.id) {
         if (key === "apply_tax") {
+          // Now it's a boolean that determines if project tax is applied
           return { ...r, apply_tax: value };
         }
         return { ...r, [key]: value };
@@ -87,98 +85,58 @@
       mode: row.mode,
       remarks: row.remarks,
       amount: row.amount,
-      apply_tax: row.apply_tax,
-      tax_rate: projectTaxValue,
+      // Use project tax value if apply_tax is true, otherwise 0
+      tax: row.apply_tax ? projectTaxValue : 0,
+      total: row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0),
       authorized_rep: authorized_rep,
       approver: approver,
       date: new Date().toISOString(),
     }
   }
 
-  async function saveToDatabase() {
-    try {
-      // Save payee first
-      const { data: payeeData, error: payeeError } = await supabase
-        .from("payee")
-        .upsert({name: row.name, address: row.address})
-        .select()
+  function downloadAsCSV() {
+    const taxAmount = row.apply_tax ? projectTaxValue : 0;
+    const totalAmount = row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0);
+    
+    const csvData = [
+      ['DV Number', 'Name', 'Address', 'Particulars', 'Mode', 'Remarks', 'Amount', 'Tax (%)', 'Total', 'Project', 'Authorized Rep', 'Approver', 'Date'],
+      [
+        dv_no,
+        row.name,
+        row.address,
+        row.particulars,
+        row.mode,
+        row.remarks,
+        row.amount,
+        taxAmount,
+        totalAmount,
+        selectedProject,
+        authorized_rep,
+        approver,
+        new Date().toLocaleDateString()
+      ]
+    ];
 
-      if (payeeError) {
-        console.error('Error saving payee:', payeeError);
-        alert('Error saving payee to database');
-        return;
-      }
-
-      // Save or update voucher
-      const { data: voucherData, error: voucherError } = await supabase
-        .from("voucher")
-        .upsert({
-          dv_no: dv_no,
-          payee_name: row.name,
-          project_code: selectedProject,
-          payment_mode: row.mode,
-          voucher_date: new Date().toISOString(),
-          amount: parseFloat(row.amount) || 0,
-          apply_tax: row.apply_tax,
-          authorized_representative: authorized_rep,
-          approver: approver,
-          particulars: row.particulars,
-          remarks: row.remarks
-        })
-        .select()
-
-      if (voucherError) {
-        console.error('Error saving voucher:', voucherError);
-        alert('Error saving voucher to database');
-        return;
-      }
-
-      // Update the row with the saved dv_no to prevent regeneration
-      $rows = $rows.map(r => {
-        if (r.id === row.id) {
-          return { ...r, dv_no: dv_no };
+    const csvContent = csvData.map(row => 
+      row.map(field => {
+        const stringField = String(field || '');
+        if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+          return `"${stringField.replace(/"/g, '""')}"`;
         }
-        return r;
-      });
+        return stringField;
+      }).join(',')
+    ).join('\n');
 
-      console.log('Voucher saved successfully:', voucherData);
-      alert('Voucher saved to database successfully!');
-      
-    } catch (error) {
-      console.error('Error saving voucher:', error);
-      alert('Error saving voucher to database');
-    }
-    
-    openActionId = null;
-  }
-
-  // New function to delete from database
-  async function deleteFromDatabase() {
-    if (!confirm("Are you sure you want to delete this voucher from the database? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from("voucher")
-        .delete()
-        .eq("dv_no", dv_no);
-
-      if (error) {
-        console.error('Error deleting voucher:', error);
-        alert('Error deleting voucher from database');
-        return;
-      }
-
-      // Remove from local state
-      $rows = $rows.filter(r => r.id !== row.id);
-      alert('Voucher deleted from database successfully!');
-      
-    } catch (error) {
-      console.error('Error deleting voucher:', error);
-      alert('Error deleting voucher from database');
-    }
-    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `voucher_${dv_no}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     openActionId = null;
   }
 
@@ -195,7 +153,7 @@
     const newRow = {
       ...row,
       id: crypto.randomUUID(),
-      dv_no: '' // Clear dv_no so it gets regenerated
+      dv_no: ''
     };
     $rows = [...$rows, newRow];
     openActionId = null;
@@ -205,7 +163,7 @@
 <tr class="bg-white border-b border-gray-200 hover:bg-gray-50">
   <!-- DV Number -->
   <td class="px-3 py-3 w-[12%] min-w-[120px]">
-    <div class="truncate" title={dv_no}>{dv_no}</div>
+    <div class="truncate">{dv_no}</div>
   </td>
 
   <!-- Name -->
@@ -312,18 +270,15 @@
   >
     <div class="py-1">
       <button onclick={() => { generateVoucher(rowToPDF(row)); openActionId = null; }} class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Download as PDF</button>
-      <button onclick={() => { saveToDatabase(); }} class="dropdown-item block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left">Save to Database</button>
+      <button onclick={() => { downloadAsCSV(); }} class="dropdown-item block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 w-full text-left">Download as CSV</button>
       <button onclick={() => { duplicateRow(); }} class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Duplicate</button>
-      <hr class="border-gray-200 my-1">
       <button onclick={() => { deleteRow(); }} class="dropdown-item block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Delete</button>
-      {#if row.dv_no}
-        <button onclick={() => { deleteFromDatabase(); }} class="dropdown-item block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Delete from Database</button>
-      {/if}
+      <!-- Removed "Save to database" button -->
     </div>
   </div>
 {/if}
 
-<style lang="postcss">
+<style>
   table {
     width: 100%;
     table-layout: fixed;

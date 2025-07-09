@@ -165,7 +165,7 @@
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Authorized Rep</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approver / Action</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approver</th>
       </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
