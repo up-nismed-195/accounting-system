@@ -14,7 +14,7 @@
       <img src="/nismed.png" alt="NISMED Logo" class="logo" />
       <nav class="nav-menu">
         {#each [
-          {name: "Dashboard", link: "/dashboard"},
+          // {name: "Dashboard", link: "/dashboard"},
           {name: "Vouchers", link: "/vouchers"},
           {name: "Projects", link: "/projects"},
           {name: "History", link: "/history"},

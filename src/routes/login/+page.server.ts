@@ -9,7 +9,7 @@ const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_KEY);
 
 export const load: PageServerLoad = async ({ cookies }) => {
   const session = cookies.get('session');
-  if (session === 'valid') throw redirect(303, '/dashboard');
+  if (session === 'valid') throw redirect(303, '/vouchers');
 };
 
 export const actions: Actions = {
@@ -37,6 +37,6 @@ export const actions: Actions = {
       maxAge: 60 * 60 * 24
     });
 
-    throw redirect(303, '/dashboard');
+    throw redirect(303, '/vouchers');
   }
 };
