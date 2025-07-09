@@ -1,82 +1,52 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+	interface cash_advance {
+		id?: number,
+		project_code: string,
+		date_requested: string,
+		date_received?: string,
+		received_from?: string,
+		cash_amount: number,
 	}
 
-	interface Project {
-		code: string,
+	interface liquidation_group {
+		id?: number,
+		project_code: string,
+		misc_particular: string,
+		has_tax_deduction: boolean,
+		gross: number
+	}
+
+	interface payee {
 		name: string,
-		is_active?: boolean,
-		gross_total?: number,
-		net_total?: number,
-		total_payees?: number,
-		total_vouchers?: number
-		authorized_rep?: string,
-		approver?: string,
-		tax_value?: string
+		id?: number,
+		address?: string,
+		tin_id?: string,
 	}
 	
-	interface LiquidationEntry {
-		project_code: string,
-		project_name: string,
-		dv_no: string,
-		voucher_date: string,
-		particulars: string,
-		tin_no: string,
-		gross: number,
-		amount_taxed: number,
-		net_amount: number,
-		remarks: string,
-		payee_name: string
-	}
-
-	interface LiquidationSummary {
-		project_code: string,
-		gross_total: number,
-		net_total: number,
-		total_payees: number,
-		total_vouchers: number,
-	}
-
-	interface Payee {
-		name: string,
-		address: string,
-	}
-
-	interface VoucherEntry extends
-		Pick<Payee, "name" | "address">
-	{	
-		id: string,
-		dv_no: string,
-		particulars: string,
-		mode: string,
-		remarks: string,
-		amount: number,
-		// tax: number,
-		apply_tax: boolean
-	}
-
-	interface VoucherPDF extends Pick<VoucherEntry, 
-		"name"  
-		|"address"
-		| "dv_no" 
-		| "particulars" 
-		| "mode" 
-		| "remarks" 
-		| "amount" 
-	> {
-		tax_rate: number,
-		apply_tax: boolean,
-		project_name: string,
-		date: string,	
+	interface project {
+		code: string,
+		id?: number,
+		title: string,
+		tax: number,	
 		authorized_rep: string,
 		approver: string,
+		admin_officer: string,
+	}
+
+	interface voucher {
+		dv_no: string,
+		id?: number,
+		payee_name: string,
+		project_code: string,
+		date: string,
+		nth_yearly_voucher: number,
+		gross: number,
+		has_tax_deduction: boolean,
+		particulars: string,
+		payment_mode: string,
+		remarks?: string,
 	}
 }
 
