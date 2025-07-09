@@ -1,7 +1,5 @@
 import { jsPDF } from "jspdf"
 
-
-
 export function generateReport(reportData: LiquidationEntry[]) {
     // ===================== 
     // preamble declarations
@@ -34,9 +32,17 @@ export function generateReport(reportData: LiquidationEntry[]) {
 
     // function addVoucherEntry() {}
     
-    // deriving data
-    const project_code = reportData[0].project_code 
-    const total = 178000
+    // deriving data from database
+    const project_code = reportData[0]?.project_code || "N/A"
+    
+    // Calculate totals from database entries
+    const personnelServicesTotal = reportData.reduce((sum, entry) => sum + (entry.gross || 0), 0)
+    const taxTotal = reportData.reduce((sum, entry) => sum + (entry.amount_taxed || 0), 0)
+    const mooeTotal = reportData.reduce((sum, entry) => sum + (entry.mooe || 0), 0) // assuming MOOE field exists
+    const cashAdvanceTotal = personnelServicesTotal + taxTotal + mooeTotal
+    
+    // Format numbers with commas
+    const formatNumber = (num: number) => num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
 
     // ==================
     // start of page body 
@@ -51,15 +57,13 @@ export function generateReport(reportData: LiquidationEntry[]) {
     doc.setFontSize(12)
     doc.setTextColor("black")
 
-
     // title
     doc.text(`${project_code} Project`, PAGE_WIDTH/2, current_height, { align: "center" });
     current_height += 6
 
     // project
-    doc.text(`Liquidation report for the PHP ${total}`, PAGE_WIDTH/2, current_height, { align: "center" });
+    doc.text(`Liquidation report for the PHP ${formatNumber(cashAdvanceTotal)}`, PAGE_WIDTH/2, current_height, { align: "center" });
     current_height += 5
-
 
     // header-body dividing line
     addLine(MARGIN, 6)
@@ -73,34 +77,35 @@ export function generateReport(reportData: LiquidationEntry[]) {
     doc.setFont("Times", "bold")
     addText("Cash Advance from FPSMER Inc.:", MARGIN, 0)
     doc.setFont("Times", "normal")
-    addText("178,000.00", PAGE_WIDTH-MARGIN, 5, "right")
+    addText(formatNumber(cashAdvanceTotal), PAGE_WIDTH-MARGIN, 5, "right")
     
     doc.setFont("Times", "normal")
     doc.setTextColor("#666666")
-    addText("• Requested on 9 December 2024", TAB_RATIO*MARGIN)
-    addText("• Check No.: 2000000275", TAB_RATIO*MARGIN)
+    // Get request date and check number from first entry or use defaults
+    const requestDate = reportData[0]?.request_date || "9 December 2024"
+    const checkNumber = reportData[0]?.check_number || "2000000275"
+    addText(`• Requested on ${requestDate}`, TAB_RATIO*MARGIN)
+    addText(`• Check No.: ${checkNumber}`, TAB_RATIO*MARGIN)
     doc.setTextColor("black")
     doc.setFont("Times", "normal")
 
     doc.setFont("Times", "semibold")
     addText("A. Personal Services", TAB_RATIO*MARGIN, 0)
     doc.setFont("Times", "normal")
-    addText("155,700.00", PAGE_WIDTH-MARGIN, 5, "right")
+    addText(formatNumber(personnelServicesTotal), PAGE_WIDTH-MARGIN, 5, "right")
 
     doc.setFont("Times", "medium")
     addText("B. MOOE", TAB_RATIO*MARGIN, 0)
     doc.setFont("Times", "normal")
-    addText("5,000.00", PAGE_WIDTH-MARGIN, 5, "right")
+    addText(formatNumber(mooeTotal), PAGE_WIDTH-MARGIN, 5, "right")
 
     doc.setFont("Times", "medium")
     addText("C. Tax withheld", TAB_RATIO*MARGIN, 0)
     doc.setFont("Times", "normal")
-    addText("17,300.00", PAGE_WIDTH-MARGIN, 7, "right")
+    addText(formatNumber(taxTotal), PAGE_WIDTH-MARGIN, 7, "right")
 
-    // doc.setFont("Times", "bold");
     addText("Less expenses incurred (see summary of expenses below):", MARGIN, 0)
-    // doc.setFont("Times", "normal");
-    addText("178,000.00", PAGE_WIDTH-MARGIN, 4, "right")
+    addText(formatNumber(cashAdvanceTotal), PAGE_WIDTH-MARGIN, 4, "right")
     
     addLine()
 
@@ -108,7 +113,7 @@ export function generateReport(reportData: LiquidationEntry[]) {
     addText("Summary of expenses incurred", MARGIN, 7)
     
     doc.text(`Personnel Services`, MARGIN, current_height)
-    doc.text("155,700.00", PAGE_WIDTH-MARGIN, current_height, {align: "right"})
+    doc.text(formatNumber(personnelServicesTotal), PAGE_WIDTH-MARGIN, current_height, {align: "right"})
     current_height += 6
 
     doc.setFontSize(8)
@@ -116,28 +121,27 @@ export function generateReport(reportData: LiquidationEntry[]) {
     doc.text(`Payee`, 2*MARGIN, current_height)
     doc.text(`Gross`, 5*MARGIN, current_height)
     doc.text(`10% Tax`, 6*MARGIN, current_height)
-    doc.text(`Next`, 7*MARGIN, current_height)
-    // doc.text("Total", 8*MARGIN, current_height)
+    doc.text(`Net`, 7*MARGIN, current_height)
     doc.text(`Remarks`, 8*MARGIN, current_height)
     doc.setFont("Times", "normal")
     current_height+= 6
     
     for (const entry of reportData) {
-        // dv no, patriculars, gross, tax, net amount, total, remarks
-        // addText(`${entry.dv_no}, ${entry.payee_name}`)
-        doc.text(`${entry.dv_no}`,1*MARGIN, current_height)
-        doc.text(`${entry.payee_name}`, 2*MARGIN, current_height)
-        doc.text(`${entry.gross}.00`, 5*MARGIN, current_height)
-        doc.text(`${entry.amount_taxed}.00`, 6*MARGIN, current_height)
-        doc.text(`${entry.net_amount}.00`, 7*MARGIN, current_height)
-        doc.text(`${entry.remarks}`, 8*MARGIN, current_height)
+        doc.text(`${entry.dv_no || ''}`,1*MARGIN, current_height)
+        doc.text(`${entry.payee_name || ''}`, 2*MARGIN, current_height)
+        doc.text(`${formatNumber(entry.gross || 0)}`, 5*MARGIN, current_height)
+        doc.text(`${formatNumber(entry.amount_taxed || 0)}`, 6*MARGIN, current_height)
+        doc.text(`${formatNumber(entry.net_amount || 0)}`, 7*MARGIN, current_height)
+        doc.text(`${entry.remarks || ''}`, 8*MARGIN, current_height)
 
         current_height += 6
     }
 
-    doc.text(`Personnel Services`, MARGIN, current_height)
-    doc.text("155,700.00", PAGE_WIDTH-MARGIN, current_height, {align: "right"})
+    doc.text(`Personnel Services Total`, MARGIN, current_height)
+    doc.text(formatNumber(personnelServicesTotal), PAGE_WIDTH-MARGIN, current_height, {align: "right"})
     current_height += 6
     
-    doc.save(`sample.pdf`);   
+    const filename = `${project_code}_LiquidationReport_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.pdf`
+    
+    doc.save(filename);   
 }

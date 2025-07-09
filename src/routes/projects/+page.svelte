@@ -45,6 +45,7 @@
             .from("liquidations")
             .select()
             .eq("project_code", selectedProject)
+            .order(sortBy, { ascending: sortOrder === "ascending" })
 
         liquidations = data ?? []
         liquidationsLoading.set(false)
@@ -145,8 +146,8 @@
         <thead class="text-xs text-white bg-primary">
             <tr>
                 {#each [
-                    "Payee", "DV No.", "Date", "Particulars", "TIN No.",
-                    "Gross (PHP)", "Taxed (PHP)", "Net (PHP)", "Remarks"
+                    "Payee", "DV No.", "Date", "Particulars", 
+                    "Gross (PHP)", "Taxed (PHP)", "Net (PHP)"
                 ] as column}
                     <th scope="col" class="px-3 py-3">{column}</th>
                 {/each}
@@ -156,19 +157,13 @@
         <tbody class="text-[13px]">
             {#each liquidations as liquidation}
                 <tr class="text-xs border-b border-gray-200 hover:bg-gray-100">
-                    {#each [
-                        liquidation.payee_name,
-                        liquidation.dv_no,
-                        liquidation.voucher_date,
-                        liquidation.particulars,
-                        liquidation.tin_no,
-                        `${liquidation.gross}.00`,
-                        `${liquidation.amount_taxed}.00`,
-                        `${liquidation.net_amount}.00`,
-                        liquidation.remarks,
-                    ] as entry}
-                        <td class="px-2 py-4 max-w-[200px] break-words">{entry}</td>
-                    {/each}
+                    <td class="px-2 py-4 max-w-[200px] break-words">{liquidation.payee_name}</td>
+                    <td class="px-2 py-4">{liquidation.dv_no}</td>
+                    <td class="px-2 py-4">{new Date(liquidation.voucher_date).toLocaleDateString()}</td>
+                    <td class="px-2 py-4 max-w-[200px] break-words">{liquidation.particulars}</td>
+                    <td class="px-2 py-4 text-right">{liquidation.gross?.toFixed(2)}</td>
+                    <td class="px-2 py-4 text-right">{liquidation.amount_taxed?.toFixed(2)}</td>
+                    <td class="px-2 py-4 text-right">{liquidation.net_amount?.toFixed(2)}</td>
                     <td class="px-5 py-4 text-right">
                         <a href="#" class="font-medium text-blue-600 hover:underline">Edit</a>
                     </td>
@@ -203,8 +198,8 @@
             <thead class="text-xs text-white bg-primary">
                 <tr>
                     {#each [
-                        "Project Code", "Project Title", "Total Payees", "Total vouchers",
-                        "Gross Total (PHP)", "Net Total (PHP)", "Approver", "Authorized Representative", "Actions"
+                        "Project Code", "Project Title", "Total Vouchers",
+                        "Gross Total (PHP)", "Net Total (PHP)", "Actions"
                     ] as column}
                         <th scope="col" class="px-6 py-3">{column}</th>
                     {/each}
@@ -215,12 +210,9 @@
                     <tr class="bg-white border-b border-gray-200 hover:bg-gray-50">
                         <td class="px-6 py-3">{project.code}</td>
                         <td class="px-6 py-3">{project.name}</td>
-                        <td class="px-6 py-3">{project.total_payees}</td>
-                        <td class="px-6 py-3">{project.total_vouchers}</td>
-                        <td class="px-6 py-3">{project.gross_total}.00</td>
-                        <td class="px-6 py-3">{project.net_total}.00</td>
-                        <td class="px-6 py-3">{project.authorized_rep}</td>
-                        <td class="px-6 py-3">{project.approver}</td>
+                        <td class="px-6 py-3 text-center">{project.total_vouchers}</td>
+                        <td class="px-6 py-3 text-right">{project.gross_total?.toFixed(2)}</td>
+                        <td class="px-6 py-3 text-right">{project.net_total?.toFixed(2)}</td>
                         <td class="px-6 py-3">
                             <button
                                 class="text-red-600 text-xs hover:underline"
