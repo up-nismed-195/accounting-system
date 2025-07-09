@@ -1,6 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
+
+	// tables
 	interface cash_advance {
 		id?: number,
 		project_code: string,
@@ -47,6 +49,15 @@ declare global {
 		particulars: string,
 		payment_mode: string,
 		remarks?: string,
+	}
+
+	// summaries
+	interface summary {
+		code: string,
+		title: string,
+		total_vouchers: number,
+		gross_total: number,
+		net_total: number,
 	}
 }
 
