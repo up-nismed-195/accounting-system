@@ -13,11 +13,13 @@ export function generatePDF(voucherData) {
     authorized_rep,
     approver,
     amount,
-    apply_tax
+    apply_tax,
+    tax_rate = 0  // Add tax_rate parameter
   } = voucherData;
 
   const totalAmount = parseFloat(amount);
-  const tax = totalAmount * (0.01 * apply_tax);
+  const taxRate = parseFloat(tax_rate) || 0;  // Use the passed tax rate
+  const tax = totalAmount * (0.01 * taxRate);
   const netTotal = totalAmount - tax;
 
   const amountFormatted = `PHP ${totalAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
@@ -134,11 +136,12 @@ export function generatePDF(voucherData) {
   let currentY = baseY + height;
 
   // Tax and Total box (shared box under amount)
-  const summaryHeight = apply_tax ? 24 : 12;
+  const summaryHeight = (apply_tax && taxRate > 0) ? 24 : 12;
   doc.rect(150, currentY, 50, summaryHeight);
 
-  if (apply_tax) {
-    doc.text("Less 10% Tax", 145, currentY + 8, { align: "right" });
+  if (apply_tax && taxRate > 0) {
+    // Use dynamic tax rate text
+    doc.text(`Less ${taxRate}% Tax`, 145, currentY + 8, { align: "right" });
     doc.text(taxFormatted, 195, currentY + 8, { align: "right" });
     doc.setFont("Times", "bold");
     doc.text("Total", 145, currentY + 18, { align: "right" });

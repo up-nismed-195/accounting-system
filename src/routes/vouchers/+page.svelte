@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { applyAction } from "$app/forms";
-	
+  import { applyAction } from "$app/forms";
+  
   import Row from "./Row.svelte";
   import { rows } from "./data.svelte";
   import { generateRandomVoucherData } from "./helpers";
   import { generateVoucher } from "./helpers";
 
-  // let data = $props();
+  let data = $props();
 
   let selectedProject = $state("")
   
@@ -16,13 +16,13 @@
     project: selectedProject,
     summaries: summaries,
     selectedProject: selectedProject,
+    projectTaxValue: projectInfo[selectedProject]?.tax_value || 0  // Added tax value
   })
 
   let projectInfo = $state({})
 
   let authorized_rep = $derived(projectInfo[selectedProject]?.authorized_rep)
   let approver = $derived(projectInfo[selectedProject]?.approver)
-  let project_name = $derived(projectInfo[selectedProject]?.project_name) 
 
   const headers = [
     "DV No.",
@@ -35,47 +35,82 @@
     "Tax",
   ]
 
+  // Auto-save function for new rows
+  async function saveRowToDatabase(row: VoucherEntry) {
+    const voucherIndex = (summaries[selectedProject]?.vouchers ?? 0) + $rows.length;
+    const dv_no = `${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`;
+    
+    // Save payee first
+    const { data: payeeData, error: payeeError } = await supabase
+      .from("payee")
+      .upsert({name: row.name, address: row.address})
+      .select()
+
+    // Save voucher with apply_tax boolean
+    const { data: voucherData, error: voucherError } = await supabase
+      .from("voucher")
+      .upsert({
+        dv_no: dv_no,
+        payee_name: row.name,
+        project_code: selectedProject,
+        payment_mode: row.mode,
+        voucher_date: new Date().toISOString(),
+        amount: row.amount,
+        apply_tax: row.apply_tax,  // Boolean instead of tax percentage
+        authorized_representative: authorized_rep,
+        approver: approver  
+      })
+      .select()
+
+    if (payeeError || voucherError) {
+      console.error("Error saving:", payeeError || voucherError);
+      alert("Error saving data to database");
+    } else {
+      console.log("Row saved successfully");
+    }
+
+    await loadProjects(); // Refresh summaries
+  }
   
-  function addRow() {      
+  async function addRow() {      
     let row: VoucherEntry = generateRandomVoucherData();
-    row.id = crypto.randomUUID(); // assign unique id
+    row.id = crypto.randomUUID();
+    row.apply_tax = false; // Default to false
+    
     $rows = [...$rows, row];
+    
+    // Auto-save to database
+    await saveRowToDatabase(row);
   }
 
   import { padZeroes } from "./helpers";
 
-  
   function generateAllVouchers() {
-    // console.log($projectSumma  ries)
-    
     $rows.forEach((row, index) => {
       let voucherIndex = $derived((summaries[selectedProject]?.vouchers ?? 0) + index + 1)
       let dv_no = $derived(`${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`)
 
-      const BASE = 23;
+      const projectTaxValue = projectInfo[selectedProject]?.tax_value || 0;
+      
       const data = {
-        name: row.name,
-        address: row.address,
-        particulars: row.particulars,
-        dv_no: dv_no,
-        project_name: project_name,
-        mode: row.mode,
-        remarks: row.remarks,
-        amount: row.amount,
-        tax: row.tax,
-        total: row.amount - (0.01 * row.tax * row.amount),
-        authorized_rep: authorized_rep,
-        approver: approver,
-        date: new Date().toISOString(),
-      }
+          name: row.name,
+          address: row.address,
+          dv_no: dv_no,
+          particulars: row.particulars,
+          mode: row.mode,
+          remarks: row.remarks,
+          amount: row.amount,
+          tax: row.apply_tax ? projectTaxValue : 0,  // Use project tax if apply_tax is true
+          project_name: selectedProject,
+          date: Date.now().toString(),
+          total: row.amount - (row.apply_tax ? (0.01 * projectTaxValue * row.amount) : 0),
+          authorized_rep: authorized_rep,
+          approver: approver,
+        };
       generateVoucher(data);
     });
   }
 
-  function saveAllVouchers() {
-    
-  }
-  
   // =======
   // onMount
   // =======
@@ -89,25 +124,26 @@
   }
 
   async function loadProjectInfo() {
-    const { data, error } = await
-    supabase
-    .from("project")
-    .select()
+    const { data, error } = await supabase
+      .from("project")
+      .select()
 
     projectInfo = Object.fromEntries(
-      (data ?? []).map(item => [item.code, { approver: item.approver, authorized_rep: item.authorized_rep, project_name: item.name}])
+      (data ?? []).map(item => [item.code, { 
+        approver: item.approver, 
+        authorized_rep: item.authorized_rep,
+        tax_value: item.tax_value  // Added tax_value from project
+      }])
     )    
   }
  
-
   onMount(async () => {
     await loadProjects()
     const { error, data } = await supabase
         .from("project_summaries")
         .select()
     
-    // alert(JSON.stringi-*fy(summaries))
-    // projectSummaries.set(data ?? [])
+    projectSummaries.set(data ?? [])
     
     await loadProjectInfo()
 
@@ -170,7 +206,6 @@
       <h1 class="text-4xl font-semibold">
         <a href="#top">Add Vouchers</a> 
       </h1> 
-      <!-- <span class="ml-0.5 -mb-0.5 text-sm">to</span> -->
       {#if $projectsLoading}
         <Spinner />
       {:else}
@@ -199,14 +234,6 @@
   </div>
 
   <div class="flex gap-1">
-
-    <!-- <button
-      type="button"
-      class="border text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
-      onclick={saveAllVouchers}
-    >
-      Save all
-    </button> -->
     <button
       type="button"
       class="border text-white bg-red-600 hover:bg-red-800 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
@@ -217,19 +244,21 @@
   </div>
 </div>
   
-<!-- <hr class="border-black/10 border-1 mt-2 mb-4 border-dashed"> -->
-
 <div class="mt-4 mb-0.5 gap-2 flex items-center">
   <div class="flex justify-start gap-2">
     <span class="font-medium text-sm">Authorized representative: {authorized_rep} </span> 
-    <!-- <input bind:value={authorizedRep} class="border-b border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2" type="text"> -->
   </div>
 
   <div class="text-black/30">•</div>
 
   <div class="flex justify-start gap-2">
     <span class="font-medium text-sm">Approver: {approver}</span> 
-    <!-- <input bind:value={approver} class="border-b   border-gray-600 h-5 outline-none focus:ring-0 focus:border-blue-600 focus:border-b-2"  type="text"> -->
+  </div>
+
+  <div class="text-black/30">•</div>
+
+  <div class="flex justify-start gap-2">
+    <span class="font-medium text-sm">Tax Rate: {projectInfo[selectedProject]?.tax_value || 0}%</span> 
   </div>
 </div>
 
@@ -251,7 +280,7 @@
 </thead>
 <tbody>
     {#each $rows as row, index (row.id)}
-        <Row {row} {index} {commonInfo} {approver} {authorized_rep} {project_name}/>
+        <Row {row} {index} {commonInfo} {approver} {authorized_rep}/>
     {/each}
 </tbody>
 </table>
