@@ -145,28 +145,25 @@
     <table class="w-full text-sm text-left text-black">
         <thead class="text-xs text-white bg-primary">
             <tr>
-                {#each [
-                    "Payee", "DV No.", "Date", "Particulars", 
-                    "Gross (PHP)", "Taxed (PHP)", "Net (PHP)"
-                ] as column}
-                    <th scope="col" class="px-3 py-3">{column}</th>
-                {/each}
-                <th scope="col" class="px-3 py-3"><span class="sr-only">Edit</span></th>
+                <th scope="col" class="px-3 py-3 text-left">Payee</th>
+                <th scope="col" class="px-3 py-3 text-left">DV No.</th>
+                <th scope="col" class="px-3 py-3 text-left">Date</th>
+                <th scope="col" class="px-3 py-3 text-left">Particulars</th>
+                <th scope="col" class="px-3 py-3 text-right">Gross (PHP)</th>
+                <th scope="col" class="px-3 py-3 text-right">Taxed (PHP)</th>
+                <th scope="col" class="px-3 py-3 text-right">Net (PHP)</th>
             </tr>
         </thead>
         <tbody class="text-[13px]">
             {#each liquidations as liquidation}
                 <tr class="text-xs border-b border-gray-200 hover:bg-gray-100">
-                    <td class="px-2 py-4 max-w-[200px] break-words">{liquidation.payee_name}</td>
-                    <td class="px-2 py-4">{liquidation.dv_no}</td>
-                    <td class="px-2 py-4">{new Date(liquidation.voucher_date).toLocaleDateString()}</td>
-                    <td class="px-2 py-4 max-w-[200px] break-words">{liquidation.particulars}</td>
-                    <td class="px-2 py-4 text-right">{liquidation.gross?.toFixed(2)}</td>
-                    <td class="px-2 py-4 text-right">{liquidation.amount_taxed?.toFixed(2)}</td>
-                    <td class="px-2 py-4 text-right">{liquidation.net_amount?.toFixed(2)}</td>
-                    <td class="px-5 py-4 text-right">
-                        <a href="#" class="font-medium text-blue-600 hover:underline">Edit</a>
-                    </td>
+                    <td class="px-3 py-4 max-w-[200px] break-words text-left">{liquidation.payee_name}</td>
+                    <td class="px-3 py-4 text-left">{liquidation.dv_no}</td>
+                    <td class="px-3 py-4 text-left">{new Date(liquidation.voucher_date).toLocaleDateString()}</td>
+                    <td class="px-3 py-4 max-w-[200px] break-words text-left">{liquidation.particulars}</td>
+                    <td class="px-3 py-4 text-right">{liquidation.gross?.toFixed(2)}</td>
+                    <td class="px-3 py-4 text-right">{liquidation.amount_taxed?.toFixed(2)}</td>
+                    <td class="px-3 py-4 text-right">{liquidation.net_amount?.toFixed(2)}</td>
                 </tr>
             {/each}
         </tbody>
@@ -197,23 +194,23 @@
         <table class="w-full text-sm text-left text-black">
             <thead class="text-xs text-white bg-primary">
                 <tr>
-                    {#each [
-                        "Project Code", "Project Title", "Total Vouchers",
-                        "Gross Total (PHP)", "Net Total (PHP)", "Actions"
-                    ] as column}
-                        <th scope="col" class="px-6 py-3">{column}</th>
-                    {/each}
+                    <th scope="col" class="px-6 py-3 text-left">Project Code</th>
+                    <th scope="col" class="px-6 py-3 text-left">Project Title</th>
+                    <th scope="col" class="px-6 py-3 text-center">Total Vouchers</th>
+                    <th scope="col" class="px-6 py-3 text-right">Gross Total (PHP)</th>
+                    <th scope="col" class="px-6 py-3 text-right">Net Total (PHP)</th>
+                    <th scope="col" class="px-6 py-3 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {#each projects as project}
                     <tr class="bg-white border-b border-gray-200 hover:bg-gray-50">
-                        <td class="px-6 py-3">{project.code}</td>
-                        <td class="px-6 py-3">{project.name}</td>
+                        <td class="px-6 py-3 text-left">{project.code}</td>
+                        <td class="px-6 py-3 text-left">{project.name}</td>
                         <td class="px-6 py-3 text-center">{project.total_vouchers}</td>
                         <td class="px-6 py-3 text-right">{project.gross_total?.toFixed(2)}</td>
                         <td class="px-6 py-3 text-right">{project.net_total?.toFixed(2)}</td>
-                        <td class="px-6 py-3">
+                        <td class="px-6 py-3 text-center">
                             <button
                                 class="text-red-600 text-xs hover:underline"
                                 on:click={() => deleteProject(project.code)}

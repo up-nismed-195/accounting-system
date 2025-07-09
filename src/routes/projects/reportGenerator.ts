@@ -43,6 +43,16 @@ export function generateReport(reportData: LiquidationEntry[]) {
     
     // Format numbers with commas
     const formatNumber = (num: number) => num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+    
+    // Format today's date
+    const formatDate = (date: Date) => {
+        const options: Intl.DateTimeFormatOptions = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        }
+        return date.toLocaleDateString('en-US', options)
+    }
 
     // ==================
     // start of page body 
@@ -81,8 +91,8 @@ export function generateReport(reportData: LiquidationEntry[]) {
     
     doc.setFont("Times", "normal")
     doc.setTextColor("#666666")
-    // Get request date and check number from first entry or use defaults
-    const requestDate = reportData[0]?.request_date || "9 December 2024"
+    // Use today's date for request date
+    const requestDate = formatDate(new Date())
     const checkNumber = reportData[0]?.check_number || "2000000275"
     addText(`• Requested on ${requestDate}`, TAB_RATIO*MARGIN)
     addText(`• Check No.: ${checkNumber}`, TAB_RATIO*MARGIN)
