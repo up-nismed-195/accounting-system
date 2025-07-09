@@ -111,9 +111,14 @@
     
     await loadProjectInfo()
 
-    alert()
-    
-    
+    // Restore selected project from localStorage if it exists and is valid
+    const saved = localStorage.getItem(SELECTED_PROJECT_KEY);
+    if (saved && projects.includes(saved)) {
+      selectedProject = saved;
+    } else {
+      selectedProject = projects.length == 0 ? "" : projects[0];
+    }
+
     // console(summaries)
     // alert(JSON.stringify($projectSummaries))
   })
@@ -144,10 +149,19 @@
     }]))
 
 
-    selectedProject = projects.length == 0 ? "" : projects[0] 
+    // Remove default assignment here; handled in onMount
+    // selectedProject = projects.length == 0 ? "" : projects[0]
     $projectsLoading = false
   }
   
+  const SELECTED_PROJECT_KEY = "selectedProject";
+
+  // Persist selectedProject to localStorage whenever it changes
+  $effect(() => {
+    if (selectedProject) {
+      localStorage.setItem(SELECTED_PROJECT_KEY, selectedProject);
+    }
+  })
 </script>
 
 <div class="flex justify-between items-start gap-5">
