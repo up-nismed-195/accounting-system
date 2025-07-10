@@ -58,6 +58,7 @@ declare global {
 		total_vouchers: number,
 		gross_total: number,
 		net_total: number,
+		project_id?: number
 	}
 }
 
