@@ -90,10 +90,12 @@
   <div class="header-actions">
     <select class="project-select" bind:value={selectedProjectId} on:change={() => voucherRows.forEach((row, i) => updateRow(i, 'project_id', selectedProjectId))}>
       {#each projects as p}
-        <option value={p.id}>{p.code} - {p.title}</option>
+        <option value={p.id}>{p.code}</option>
       {/each}
     </select>
-    <button class="save-all-btn" on:click={saveAllVouchers}>Save All</button>
+
+    <span class="text-gray-600/70">|</span>
+    <button class="save-all-btn bg-blue-500 hover:bg-blue-700" on:click={saveAllVouchers}>Save All</button>
   </div>
 </div>
 
@@ -170,20 +172,20 @@
 }
 
 .project-select {
-  background: oklch(94% 0.07 151.328); /* lighter green */
+  background: oklch(98% 0.01 151.328); /* very light green, almost white */
   color: #1a3a1a; /* dark green text */
   font-size: 1rem;
   font-weight: 500;
   border: 2px solid oklch(44.8% 0.119 151.328);
   border-radius: 0.4rem;
-  padding: 0rem 1.5rem 0rem 1rem;
+  padding: 0rem 1.0rem;
   box-shadow: 0 1px 4px 0 rgba(44, 62, 80, 0.04);
   outline: none;
   transition: background 0.15s, border 0.15s;
   height: 2.5rem;
 }
 .project-select:focus {
-  background: oklch(88% 0.07 151.328);
+  background: oklch(94% 0.01 151.328);
   border-color: oklch(34.389% 0.09873 148.331);
 }
 
@@ -197,8 +199,8 @@
   width: 100%;
 }
 
-.save-all-btn, .add-row-btn, .save-btn {
-  background: oklch(44.8% 0.119 151.328); /* dark green */
+.add-row-btn, .save-btn {
+  background: oklch(49.213% 0.13198 151.157); /* dark green */
   color: #fff;
   font-size: 0.95rem;
   font-weight: 600;
@@ -213,8 +215,25 @@
   justify-content: center;
 }
 
-.save-all-btn:hover, .add-row-btn:hover, .save-btn:hover {
-  background: oklch(34.389% 0.09873 148.331);
+.save-all-btn {
+  /* background: oklch(36.125% 0.02679 161.677);  */
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.add-row-btn:hover, .save-btn:hover {
+  background: oklch(43.25% 0.12662 147.579);
 }
 
 .delete-btn {
@@ -241,14 +260,14 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 0;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   table-layout: fixed;
 }
 
 /* Set different column widths for different data types */
 .voucher-table th:nth-child(1), /* DV No. */
 .voucher-table td:nth-child(1) {
-  width: 8%;
+  width: 15%;
 }
 .voucher-table th:nth-child(2), /* Name */
 .voucher-table td:nth-child(2) {
@@ -269,7 +288,6 @@
 .voucher-table th:nth-child(6), /* Tax */
 .voucher-table td:nth-child(6) {
   width: 6%;
-  text-align: center;
 }
 .voucher-table th:nth-child(7), /* Particulars */
 .voucher-table td:nth-child(7) {
@@ -315,7 +333,7 @@
 .voucher-table input[type="number"],
 .voucher-table input[type="date"] {
   width: 100%;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   padding: 0.15rem 0.3rem;
   border: 1px solid #cbd5e1;
   border-radius: 0.3rem;
@@ -328,10 +346,12 @@
   height: 1rem;
 }
 
+
+
 @media (max-width: 900px) {
   .voucher-table, .voucher-table th, .voucher-table td {
-    font-size: 0.85rem;
-    padding: 0.2rem 0.2rem;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.15rem;
   }
   .page-title {
     font-size: 1.1rem;
@@ -341,4 +361,5 @@
 .save-btn, .delete-btn {
   width: 50px;
 }
+
 </style>
