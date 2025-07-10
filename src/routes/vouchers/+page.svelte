@@ -74,6 +74,11 @@
     );
   }
 
+  // Delete a row from the table
+  function deleteRow(idx: number) {
+    voucherRows = voucherRows.filter((_, i) => i !== idx);
+  }
+
   onMount(async () => {
     await load_projects();
     addRow();
@@ -126,8 +131,9 @@
           </select>
         </td>
         <td><input type="text" value={row.remarks} on:input={e => updateRow(idx, 'remarks', e.target.value)} /></td>
-        <td>
-          <button class="save-btn" on:click={() => saveVoucherRow(row, idx)}>Save</button>
+        <td class="space-x-1">
+          <button class="text-blue-500 hover:underline" on:click={() => saveVoucherRow(row, idx)}>Save</button>
+          <button class="text-red-500 hover:underline" on:click={() => deleteRow(idx)}>Delete</button>
         </td>
       </tr>
     {/each}
@@ -170,7 +176,7 @@
   font-weight: 500;
   border: 2px solid oklch(44.8% 0.119 151.328);
   border-radius: 0.4rem;
-  padding: 0.2rem 1.5rem 0.2rem 1rem;
+  padding: 0rem 1.5rem 0rem 1rem;
   box-shadow: 0 1px 4px 0 rgba(44, 62, 80, 0.04);
   outline: none;
   transition: background 0.15s, border 0.15s;
@@ -209,6 +215,26 @@
 
 .save-all-btn:hover, .add-row-btn:hover, .save-btn:hover {
   background: oklch(34.389% 0.09873 148.331);
+}
+
+.delete-btn {
+  background: #e11d48;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.7rem 1.1rem;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  transition: background 0.15s;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.delete-btn:hover {
+  background: #be123c;
 }
 
 .voucher-table {
@@ -255,12 +281,11 @@
 }
 .voucher-table th:nth-child(9), /* Remarks */
 .voucher-table td:nth-child(9) {
-  width: 10%;
+  width: 15%;
 }
 .voucher-table th:nth-child(10), /* Actions */
 .voucher-table td:nth-child(10) {
-  width: 10%;
-  text-align: center;
+  width: 15%;
 }
 
 .voucher-table th, .voucher-table td {
@@ -311,5 +336,9 @@
   .page-title {
     font-size: 1.1rem;
   }
+}
+
+.save-btn, .delete-btn {
+  width: 50px;
 }
 </style>
