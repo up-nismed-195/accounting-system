@@ -226,7 +226,8 @@
     <tr>
       <th>Code</th>
       <th>Title</th>
-      <th>Authorized Representative</th>
+      <th>Tax</th>
+      <th>Authorized Rep.</th>
       <th>Approver</th>
       <th>Admin Officer</th>
       <th>Total Vouchers</th>
@@ -240,6 +241,7 @@
       <tr>
         <td>{s.code}</td>
         <td>{s.title}</td>
+        <td>{s.tax}%</td>
         <td>{s.authorized_rep}</td>
         <td>{s.approver}</td>
         <td>{s.admin_officer}</td>
