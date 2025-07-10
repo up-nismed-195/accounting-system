@@ -2,16 +2,30 @@
   import { onMount } from 'svelte';
   import { supabase } from "$lib/supabaseClient";
 
+
   // Project selection
   let projects: { id: string, code: string, title: string }[] = [];
   let selectedProjectId: string = '';
 
-  // Editable voucher rows
-  let voucherRows: (voucher & { name?: string, address?: string })[] = [];
+// Derived selected project and code
+$: selectedProject = projects.find(p => p.id === selectedProjectId);
+$: selectedProjectCode = selectedProject ? selectedProject.code : '';
+
+// Editable voucher rows
+let voucherRows: voucher_entry[] = [];
+
+// When selectedProjectId changes, update all voucherRows' project_id to selectedProjectCode
+$: if (voucherRows.length && selectedProjectCode) {
+  voucherRows = voucherRows.map(row => ({ ...row, project_id: selectedProjectCode }));
+}
 
   // Helper for today's date
   function today() {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  function this_year() {
+    return new Date().getFullYear().toString().slice(-2)
   }
 
   // Load projects for dropdown
@@ -23,17 +37,19 @@
 
   // Add a new empty row
   function addRow() {
+    const selectedProject = projects.find(p => p.id === selectedProjectId)
+    const selectedProjectTitle = selectedProject ? selectedProject.title : ''
+    
     voucherRows = [
       ...voucherRows,
       {
-        dv_no: '',
-        payee_id: '',
+        dv_no: `${selectedProjectCode}-${this_year()}-`,
         name: '',
         address: '',
-        project_id: selectedProjectId,
+        project_id: selectedProjectCode,
         date: today(),
         gross: 0,
-        has_tax_deduction: false,
+        tax: false,
         particulars: '',
         payment_mode: '',
         remarks: ''
@@ -42,11 +58,15 @@
   }
 
   // Save a single voucher row
-  async function saveVoucherRow(row: any, idx: number) {
+  async function saveVoucherRow(row: voucher_entry, idx: number) {
     // Only send the correct fields
     const { name, address, ...voucherData } = row;
     try {
-      const { error } = await supabase.from('vouchers').insert(voucherData);
+      const { data, error } = await supabase.from('payees').upsert({
+        name: row.name,
+        address: row.address,
+      })
+      // const { error } = await supabase.from('vouchers').insert(voucherData);
       if (error) throw error;
       alert('Voucher saved!');
     } catch (e) {
@@ -88,7 +108,7 @@
 <div class="page-header">
   <h1 class="page-title">Add Vouchers</h1>
   <div class="header-actions">
-    <select class="project-select" bind:value={selectedProjectId} on:change={() => voucherRows.forEach((row, i) => updateRow(i, 'project_id', selectedProjectId))}>
+    <select class="project-select" bind:value={selectedProjectId}>
       {#each projects as p}
         <option value={p.id}>{p.code}</option>
       {/each}
@@ -121,7 +141,7 @@
         <td><input type="text" value={row.name} on:input={e => updateRow(idx, 'name', e.target.value)} /></td>
         <td><input type="text" value={row.address} on:input={e => updateRow(idx, 'address', e.target.value)} /></td>
         <td><input type="date" value={row.date} on:input={e => updateRow(idx, 'date', e.target.value)} /></td>
-        <td><input type="number" min="0" step="1000" value={row.gross} on:input={e => updateRow(idx, 'gross', +e.target.value)} /></td>
+        <td><input type="number" min="0" step="500" value={row.gross} on:input={e => updateRow(idx, 'gross', +e.target.value)} /></td>
         <td><input type="checkbox" checked={row.has_tax_deduction} on:change={e => updateRow(idx, 'has_tax_deduction', e.target.checked)} /></td>
         <td><input type="text" value={row.particulars} on:input={e => updateRow(idx, 'particulars', e.target.value)} /></td>
         <td>

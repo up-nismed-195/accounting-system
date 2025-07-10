@@ -4,3 +4,5 @@ toasts
 loading screen
 save data before deleting
 keyboard shortcuts
+how to use (shortcuts)
+login/logout

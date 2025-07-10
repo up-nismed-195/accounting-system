@@ -253,7 +253,9 @@
   </div>
 {/if}
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#if show_delete_modal}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div class="modal-backdrop" on:click={close_delete_modal}></div>
   <div class="modal">
     <h2 class="modal-title">Delete Project</h2>
@@ -292,10 +294,12 @@
         <td>{s.total_vouchers}</td>
         <td>{s.gross_total}</td>
         <td>{s.net_total}</td>
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <td class="space-x-3">
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <span class="text-blue-500 hover:underline cursor-pointer" on:click={() => open_edit_modal(s)}>Edit</span>
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
           <span class="text-red-500 hover:underline cursor-pointer" on:click={() => open_delete_modal(s)}>Delete</span>
         </td>
       </tr>

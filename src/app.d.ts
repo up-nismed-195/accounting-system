@@ -51,6 +51,19 @@ declare global {
 		remarks?: string,
 	}
 
+	interface voucher_entry {
+		project_id: string,
+		dv_no: string,
+		name: string,
+		address: string,
+		date: string,
+		gross: number,
+		tax: boolean,
+		particulars: number,
+		payment_mode: string,
+		remarks: string,
+	}
+
 	// summaries
 	interface summary {
 		code: string,
