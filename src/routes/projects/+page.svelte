@@ -40,7 +40,7 @@
   let project_form: project = {
     code: '',
     title: '',
-    tax: 0,
+    tax: 10,
     authorized_rep: '',
     approver: '',
     admin_officer: ''
@@ -92,12 +92,18 @@
     admin_officer: ''
   };
 
-  function open_edit_modal(project: project) {
-    edit_form = { ...project };
-    edit_form.id = project.project_id
-    show_edit_modal = true;
+  function open_edit_modal(s: summary) {
+    edit_form.code = s.code
+    edit_form.id = s.project_id
+    edit_form.title = s.title
+    edit_form.authorized_rep = s.authorized_rep
+    edit_form.approver = s.approver
+    edit_form.admin_officer = s.admin_officer
+    edit_form.tax = s.tax
 
+    show_edit_modal = true;
   }
+  
   function close_edit_modal() {
     show_edit_modal = false;
   }
@@ -115,7 +121,7 @@
           approver: edit_form.approver,
           admin_officer: edit_form.admin_officer
         })
-        .eq('id', edit_form.project_id);
+        .eq('id', edit_form.id);
       if (error) throw error;
       alert("project updated successfully");
       close_edit_modal();
@@ -220,6 +226,9 @@
     <tr>
       <th>Code</th>
       <th>Title</th>
+      <th>Authorized Representative</th>
+      <th>Approver</th>
+      <th>Admin Officer</th>
       <th>Total Vouchers</th>
       <th>Gross Total</th>
       <th>Net Total</th>
@@ -231,10 +240,15 @@
       <tr>
         <td>{s.code}</td>
         <td>{s.title}</td>
+        <td>{s.authorized_rep}</td>
+        <td>{s.approver}</td>
+        <td>{s.admin_officer}</td>
         <td>{s.total_vouchers}</td>
         <td>{s.gross_total}</td>
         <td>{s.net_total}</td>
         <td class="flex gap-3">
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <span class="text-blue-500 hover:underline cursor-pointer" on:click={() => open_edit_modal(s)}>Edit</span>
           <span class="text-red-500 hover:underline cursor-pointer">Delete</span>
         </td>

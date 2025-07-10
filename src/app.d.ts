@@ -59,6 +59,10 @@ declare global {
 		gross_total: number,
 		net_total: number,
 		project_id?: number
+		authorized_rep: string,
+		approver: string,
+		admin_officer: string,
+		tax: number,
 	}
 }
 
