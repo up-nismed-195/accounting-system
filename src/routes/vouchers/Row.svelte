@@ -29,35 +29,35 @@
   let menuPosition = $state({ x: 0, y: 0 });
 
   function toggleActions(id: string, event: MouseEvent) {
-  if (openActionId === id) {
-    openActionId = null;
-  } else {
-    const rect = (event.target as HTMLElement).closest('button')?.getBoundingClientRect();
-    if (rect) {
-      const dropdownHeight = 200; 
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
+    if (openActionId === id) {
+      openActionId = null;
+    } else {
+      const rect = (event.target as HTMLElement).closest('button')?.getBoundingClientRect();
+      if (rect) {
+        const dropdownHeight = 200; 
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
 
-      if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-        menuPosition = {
-          x: rect.right - 200,
-          y: rect.top - dropdownHeight - 5 
-        };
-      } else {
-        menuPosition = {
-          x: rect.right - 200,
-          y: rect.bottom + 5
-        };
+        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+          menuPosition = {
+            x: rect.right - 200,
+            y: rect.top - dropdownHeight - 5 
+          };
+        } else {
+          menuPosition = {
+            x: rect.right - 200,
+            y: rect.bottom + 5
+          };
+        }
       }
+      openActionId = id;
     }
-    openActionId = id;
   }
-}
 
   function handleClickOutside(event: MouseEvent) {
-    if (!(event.target as HTMLElement).closest('.action-menu') || 
-        (event.target as HTMLElement).closest('.dropdown-item')) {
+    if (!(event.target as HTMLElement).closest('.action-menu') && 
+        !(event.target as HTMLElement).closest('.dropdown-item')) {
       openActionId = null;
     }
   }
@@ -81,6 +81,52 @@
           return { ...r, apply_tax: value };
         }
         return { ...r, [key]: value };
+      }
+      return r;
+    });
+  }
+
+  // Function to check if DV number already exists
+  async function checkDVNumberExists(dvNumber: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from("voucher")
+        .select("dv_no")
+        .eq("dv_no", dvNumber)
+        .eq("project_code", selectedProject);
+      
+      if (error) {
+        console.error("Error checking DV number:", error);
+        return false;
+      }
+      
+      return data && data.length > 0;
+    } catch (error) {
+      console.error("Error checking DV number:", error);
+      return false;
+    }
+  }
+
+  // Function to handle DV number changes
+  async function updateDVNumber(newDVNumber: string) {
+    // Validate DV number format (optional but recommended)
+    const dvPattern = /^[A-Z]+-\d{2}-\d{3}$/;
+    if (!dvPattern.test(newDVNumber)) {
+      alert("Invalid DV number format. Use format: PROJECT-YY-###");
+      return;
+    }
+    
+    // Check if DV number already exists for this project
+    const exists = await checkDVNumberExists(newDVNumber);
+    if (exists && newDVNumber !== row.dv_no) {
+      alert("This DV number already exists for this project.");
+      return;
+    }
+    
+    // Update the row with the new DV number
+    $rows = $rows.map(r => {
+      if (r.id === row.id) {
+        return { ...r, dv_no: newDVNumber };
       }
       return r;
     });
@@ -164,7 +210,6 @@
     openActionId = null;
   }
 
-  // New function to delete from database
   async function deleteFromDatabase() {
     if (!confirm("Are you sure you want to delete this voucher from the database? This action cannot be undone.")) {
       return;
@@ -182,7 +227,6 @@
         return;
       }
 
-      // Remove from local state
       $rows = $rows.filter(r => r.id !== row.id);
       alert('Voucher deleted from database successfully!');
       
@@ -217,7 +261,13 @@
 <tr class="bg-white border-b border-gray-200 hover:bg-gray-50">
   <!-- DV Number -->
   <td class="px-3 py-3 w-[12%] min-w-[120px]">
-    <div class="truncate" title={dv_no}>{dv_no}</div>
+    <input 
+      type="text" 
+      oninput={e => updateDVNumber(e.target.value)}
+      value={dv_no}
+      class="w-full px-2 py-1 border border-transparent hover:border-blue-300 rounded"
+      placeholder="DV Number..."
+    >
   </td>
 
   <!-- Name -->
@@ -311,7 +361,7 @@
       }}
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
       </svg>
     </button>
   </td>
@@ -327,9 +377,8 @@
       <button onclick={() => { saveToDatabase(); }} class="dropdown-item block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left">Save to Database</button>
       <button onclick={() => { duplicateRow(); }} class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Duplicate</button>
       <hr class="border-gray-200 my-1">
-      <button onclick={() => { deleteRow(); }} class="dropdown-item block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Delete</button>
       {#if row.dv_no}
-        <button onclick={() => { deleteFromDatabase(); }} class="dropdown-item block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Delete from Database</button>
+        <button onclick={() => { deleteFromDatabase(); }} class="dropdown-item block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Delete</button>
       {/if}
     </div>
   </div>
@@ -386,5 +435,13 @@
     color: #9ca3af;
     font-style: italic;
     opacity: 0.7;
+  }
+
+  .dropdown-item {
+    transition: all 0.2s;
+  }
+
+  .dropdown-item:hover {
+    background-color: #f3f4f6;
   }
 </style>

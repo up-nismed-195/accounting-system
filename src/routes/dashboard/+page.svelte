@@ -1,59 +1,121 @@
 <script>
     import { onMount } from 'svelte';
     import { supabase } from '$lib/supabaseClient';
-    // import { json2csv } from 'json-2-csv'
     
-    // Sample data for the charts - now with dynamic values
-    let salesData = [
-        { period: 'Due', amount: 1250, color: '#10B981' },
-        { period: '15 - 21 Jun', amount: 850, color: '#10B981' },
-        { period: 'This Week', amount: 4200, color: '#10B981' },
-        { period: '29 Jun - 5 Jul', amount: 3100, color: '#10B981' },
-        { period: '6 - 12 Jul', amount: 1800, color: '#10B981' },
-        { period: 'Not Due', amount: 5600, color: '#D1FAE5' }
-    ];
-
-    // Bank logos data
-    let banks = [
-        { name: 'BDO', logo: '🏦', connected: false },
-        { name: 'Security Bank', logo: '🏛️', connected: false },
-        { name: 'ING', logo: '🧡', connected: false },
-        { name: 'KBC', logo: '🔵', connected: false },
-        { name: 'Belfius', logo: '🏦', connected: false },
-        { name: 'Chase', logo: '🔷', connected: false },
-        { name: 'CBC', logo: '⭐', connected: false },
-        { name: 'Rabobank', logo: '🟦', connected: false }
-    ];
-
-    let searchQuery = '';
-    let favorites = true;
     let currentDate = new Date();
     let selectedDate = new Date();
     let showCalendar = false;
     
-    // Recent vouchers data
-    let recentVouchers = [
-        { id: 'V-001', date: '2023-06-28', amount: 1250.50, type: 'Payment', status: 'Posted' },
-        { id: 'V-002', date: '2023-06-27', amount: 845.75, type: 'Receipt', status: 'Posted' },
-        { id: 'V-003', date: '2023-06-26', amount: 3200.00, type: 'Journal', status: 'Draft' },
-        { id: 'V-004', date: '2023-06-25', amount: 1560.30, type: 'Payment', status: 'Posted' }
-    ];
+    // Dashboard data
+    let recentProjects = [];
+    let dashboardStats = {
+        totalProjects: 0,
+        totalVouchers: 0,
+        totalGross: 0,
+        totalNet: 0,
+        pendingBills: 0
+    };
     
-    // Upcoming bills
-    let upcomingBills = [
-        { id: 'B-001', dueDate: '2023-07-05', vendor: 'Office Supplies Co.', amount: 450.00, status: 'Unpaid' },
-        { id: 'B-002', dueDate: '2023-07-12', vendor: 'Cloud Services Inc.', amount: 299.00, status: 'Unpaid' },
-        { id: 'B-003', dueDate: '2023-07-15', vendor: 'Utility Company', amount: 185.75, status: 'Unpaid' }
-    ];
+    let recentVouchers = [];
+    let loading = true;
+    
+    onMount(async () => {
+        await loadDashboardData();
+        loading = false;
+    });
 
-    function connectBank(bankName) {
-        banks = banks.map(bank => 
-            bank.name === bankName ? { ...bank, connected: !bank.connected } : bank
-        );
+    async function loadDashboardData() {
+        try {
+            // Load recent projects with their summaries
+            const { data: projectData, error: projectError } = await supabase
+                .from('project_summaries')
+                .select('*')
+                .order('code', { ascending: false })
+                .limit(4);
+            
+            if (projectError) throw projectError;
+            recentProjects = projectData || [];
+            
+            // Load dashboard statistics
+            const { data: allProjects } = await supabase
+                .from('project_summaries')
+                .select('*');
+            
+            if (allProjects) {
+                dashboardStats.totalProjects = allProjects.length;
+                dashboardStats.totalVouchers = allProjects.reduce((sum, p) => sum + (p.total_vouchers || 0), 0);
+                dashboardStats.totalGross = allProjects.reduce((sum, p) => sum + (p.gross_total || 0), 0);
+                dashboardStats.totalNet = allProjects.reduce((sum, p) => sum + (p.net_total || 0), 0);
+            }
+            
+            // Load recent vouchers
+            const { data: voucherData } = await supabase
+                .from('liquidations')
+                .select('*')
+                .order('voucher_date', { ascending: false })
+                .limit(5);
+            
+            recentVouchers = voucherData || [];
+            
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    }
+
+    async function downloadData() {
+        try {
+            const { data, error } = await supabase
+                .from("voucher")
+                .select()
+
+            const jsonString = JSON.stringify(data, null, 2)
+            const blob = new Blob([jsonString], { type: "application/json "})
+            
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "vouchers.json"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+        } catch (error) {
+            console.error(error)
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from("project")
+                .select()
+
+            const jsonString = JSON.stringify(data, null, 2)
+            const blob = new Blob([jsonString], { type: "application/json "})
+            
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "projects.json"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+                
+        } catch (error) {
+            console.error(error)
+        }
     }
     
     function formatDate(date) {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-PH', { 
+            style: 'currency', 
+            currency: 'PHP',
+            minimumFractionDigits: 2
+        }).format(amount || 0);
     }
     
     function getDayClass(date) {
@@ -95,81 +157,20 @@
         
         let days = [];
         
-        // Add empty cells for days before the first day of the month
         for (let i = 0; i < firstDay; i++) {
             days.push(null);
         }
         
-        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
             days.push(new Date(year, month, i));
         }
         
         return days;
     }
-
-    async function downloadData() {
-        
-        try {
-            const { data, error } = await 
-            supabase
-            .from("voucher")
-            .select()
-
-
-
-            // console.log()
-            const jsonString = JSON.stringify(data, null, 2)
-            const blob = new Blob([jsonString], { type: "application/json "})
-            // alert(JSON.stringify(data, null, 2))
-            
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = "vouchers.json"
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
-
-        } catch (error) {
-            console.error(error)
-        }
-
-        try {
-            const { data, error } = await 
-            supabase
-            .from("project")
-            .select()
-
-
-
-            // console.log()
-            const jsonString = JSON.stringify(data, null, 2)
-            const blob = new Blob([jsonString], { type: "application/json "})
-            // alert(JSON.stringify(data, null, 2))
-            
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = "projects.json"
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
-                
-        } catch (error) {
-            console.error(error)
-        }
-
-        
-        
-
-    }
 </script>
 
 <svelte:head>
-    <title>UP NISMED - Accounting</title>
+    <title>UP NISMED - Accounting Dashboard</title>
 </svelte:head>
 
 <div class="dashboard-bg min-h-screen">
@@ -178,15 +179,15 @@
             <!-- Dashboard Header -->
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center space-x-4">
-                    <!-- <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
-                        New Voucher
-                    </button> -->
-                    <h1 class="text-2xl font-bold text-green-900">Accounting Dashboard</h1>
+                    <h1 class="text-3xl font-bold text-green-900">Accounting Dashboard</h1>
+                    <div class="text-sm text-green-600">
+                        Welcome back! Here's your project overview.
+                    </div>
                 </div>
                 
-                <!-- Date Picker -->
+                <!-- Header Actions -->
                 <div class="relative flex gap-3">
-                    <button onclick={downloadData} class="flex justify-between items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                    <button on:click={downloadData} class="flex justify-between items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
                         Download Data
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
@@ -194,7 +195,7 @@
                     </button>
                     <button 
                         class="bg-white text-green-900 px-4 py-2 rounded-lg border border-green-200 font-medium hover:bg-green-50 transition-colors flex items-center space-x-2"
-                        onclick={() => showCalendar = !showCalendar}
+                        on:click={() => showCalendar = !showCalendar}
                     >
                         <span>{formatDate(selectedDate)}</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +206,7 @@
                     {#if showCalendar}
                         <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-green-200 z-10 p-4">
                             <div class="flex items-center justify-between mb-4">
-                                <button onclick={prevMonth}>
+                                <button on:click={prevMonth}>
                                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                                     </svg>
@@ -213,7 +214,7 @@
                                 <span class="font-medium text-green-900">
                                     {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                                 </span>
-                                <button onclick={nextMonth}>
+                                <button on:click={nextMonth}>
                                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
@@ -235,7 +236,7 @@
                                     {#if day}
                                         <button 
                                             class={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${getDayClass(day)}`}
-                                            onclick={() => selectDate(day)}
+                                            on:click={() => selectDate(day)}
                                         >
                                             {day.getDate()}
                                         </button>
@@ -249,383 +250,290 @@
                 </div>
             </div>
 
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Total Revenue -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-green-600">Total Revenue</p>
-                            <p class="text-2xl font-bold text-green-900">$12,450.75</p>
-                        </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-xs text-green-500 mt-2">↑ 12% from last month</p>
+            {#if loading}
+                <div class="flex items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
                 </div>
-                
-                <!-- Expenses -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-green-600">Total Expenses</p>
-                            <p class="text-2xl font-bold text-green-900">$8,230.50</p>
-                        </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-xs text-green-500 mt-2">↑ 8% from last month</p>
-                </div>
-                
-                <!-- Profit -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-green-600">Net Profit</p>
-                            <p class="text-2xl font-bold text-green-900">$4,220.25</p>
-                        </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-xs text-green-500 mt-2">↑ 18% from last month</p>
-                </div>
-                
-                <!-- Cash Flow -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-green-600">Cash Flow</p>
-                            <p class="text-2xl font-bold text-green-900">$3,150.00</p>
-                        </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-xs text-green-500 mt-2">↓ 5% from last month</p>
-                </div>
-            </div>
-
-            <!-- Dashboard Grid -->
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                
-                <!-- Sales Section -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-bold text-green-900 mb-2">Sales Overview</h2>
-                            <p class="text-green-700">Get Paid online. Send electronic invoices.</p>
-                        </div>
-                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
-                            New Invoice
-                        </button>
-                    </div>
-                    
-                    <!-- Interactive Sales Chart -->
-                    <div class="grid grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
-                        {#each salesData as item}
-                            <div class="text-center cursor-pointer group" onclick={() => console.log(`Clicked ${item.period}`)}>
-                                <div class="w-full h-24 bg-green-50 rounded-lg mb-2 flex items-end justify-center p-2 hover:bg-green-100 transition-colors">
-                                    <div 
-                                        class="w-8 h-16 rounded transition-all duration-300 group-hover:w-10 group-hover:opacity-90" 
-                                        style={`background-color: ${item.color}; height: ${(item.amount / 6000) * 100}%`}
-                                        title={`$${item.amount}`}
-                                    ></div>
-                                </div>
-                                <p class="text-xs text-green-700 leading-tight group-hover:text-green-900 group-hover:font-medium">{item.period}</p>
-                                <p class="text-xs text-green-500 mt-1">${item.amount}</p>
+            {:else}
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Projects -->
+                    <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-green-600">Total Projects</p>
+                                <p class="text-2xl font-bold text-green-900">{dashboardStats.totalProjects}</p>
                             </div>
-                        {/each}
-                    </div>
-                    
-                    <div class="flex justify-between items-center mt-4">
-                        <div class="text-sm text-green-600">
-                            <span class="font-medium">Total:</span> ${salesData.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}
-                        </div>
-                        <button class="text-green-600 hover:text-green-800 text-sm font-medium flex items-center">
-                            View Detailed Report
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Recent Vouchers Section -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-bold text-green-900 mb-2">Recent Vouchers</h2>
-                            <p class="text-green-700">Latest accounting entries</p>
-                        </div>
-                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
-                            View All
-                        </button>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        {#each recentVouchers as voucher}
-                            <div class="p-4 border border-green-100 rounded-lg hover:bg-green-50 transition-colors cursor-pointer">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="font-medium text-green-900">{voucher.id} - {voucher.type}</h3>
-                                        <p class="text-sm text-green-600">{voucher.date}</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-medium text-green-900">${voucher.amount.toFixed(2)}</p>
-                                        <span class={`text-xs px-2 py-1 rounded-full ${
-                                            voucher.status === 'Posted' ? 'bg-green-100 text-green-800' : 
-                                            voucher.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' : 
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {voucher.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-                </div>
-
-                <!-- Purchases Section -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-bold text-green-900 mb-2">Purchases</h2>
-                            <p class="text-green-700">Let artificial intelligence scan your bill. Pay easily.</p>
-                        </div>
-                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
-                            Upload
-                        </button>
-                    </div>
-                    
-                    <div class="flex items-center justify-center py-8">
-                        <div class="text-center max-w-md">
-                            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
                             </div>
-                            <div 
-                                class="border-2 border-dashed border-green-300 rounded-lg p-6 mb-4 hover:bg-green-50 transition-colors cursor-pointer"
-                                onclick={() => alert('File upload dialog would open here')}
-                            >
-                                <p class="text-green-700 mb-2">Drag & drop your bill here</p>
-                                <p class="text-sm text-green-600">or <button class="text-green-700 hover:underline">browse files</button></p>
-                            </div>
-                            <div class="flex items-center justify-center space-x-2 text-sm text-green-600 flex-wrap">
-                                <span>Supports: PDF, JPG, PNG</span>
-                                <span class="text-gray-400">•</span>
-                                <span>Max 10MB</span>
-                            </div>
                         </div>
+                        <p class="text-xs text-green-500 mt-2">Active projects</p>
                     </div>
                     
-                    <!-- Upcoming Bills -->
-                    <div class="mt-8">
-                        <h3 class="font-medium text-green-900 mb-4">Upcoming Bills</h3>
-                        <div class="space-y-3">
-                            {#each upcomingBills as bill}
-                                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                    <div>
-                                        <p class="text-sm font-medium text-green-900">{bill.vendor}</p>
-                                        <p class="text-xs text-green-600">Due {bill.dueDate}</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-sm font-medium text-green-900">${bill.amount.toFixed(2)}</p>
-                                        <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
-                                            {bill.status}
-                                        </span>
+                    <!-- Total Vouchers -->
+                    <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-green-600">Total Vouchers</p>
+                                <p class="text-2xl font-bold text-green-900">{dashboardStats.totalVouchers}</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-500 mt-2">Processed vouchers</p>
+                    </div>
+                    
+                    <!-- Total Gross -->
+                    <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-green-600">Total Gross</p>
+                                <p class="text-2xl font-bold text-green-900">{formatCurrency(dashboardStats.totalGross).replace('PHP', '₱')}</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-500 mt-2">All project amounts</p>
+                    </div>
+                    
+                    <!-- Total Net -->
+                    <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-green-600">Total Net</p>
+                                <p class="text-2xl font-bold text-green-900">{formatCurrency(dashboardStats.totalNet).replace('PHP', '₱')}</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-500 mt-2">After taxes</p>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    
+                    <!-- Recent Projects Section -->
+                    <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-green-900 mb-2">Recent Projects</h2>
+                                <p class="text-green-700">Your 4 most recent projects</p>
+                            </div>
+                            <a href="/projects" class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                                View All Projects
+                            </a>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            {#each recentProjects as project}
+                                <div class="p-4 border border-green-100 rounded-lg hover:bg-green-50 transition-colors cursor-pointer">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h3 class="font-medium text-green-900">{project.code}</h3>
+                                            <p class="text-sm text-green-600 mt-1">{project.name}</p>
+                                            <div class="flex items-center gap-4 mt-2">
+                                                <span class="text-xs text-green-500">
+                                                    {project.total_vouchers || 0} vouchers
+                                                </span>
+                                                <span class="text-xs text-green-500">
+                                                    Gross: {formatCurrency(project.gross_total).replace('PHP', '₱')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium text-green-900">
+                                                {formatCurrency(project.net_total).replace('PHP', '₱')}
+                                            </p>
+                                            <p class="text-xs text-green-600 mt-1">Net Amount</p>
+                                        </div>
                                     </div>
                                 </div>
                             {/each}
+                            
+                            {#if recentProjects.length === 0}
+                                <div class="text-center py-8 text-green-600">
+                                    <p>No projects found</p>
+                                    <p class="text-sm mt-2">Create your first project to get started</p>
+                                </div>
+                            {/if}
                         </div>
                     </div>
-                </div>
 
-                <!-- Bank Section -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                    <div class="mb-6">
-                        <h2 class="text-xl font-bold text-green-900 mb-2">Bank Connections</h2>
-                        <p class="text-green-700">Connect your bank. Match invoices automatically.</p>
-                    </div>
-                    
-                    <div class="mb-6 flex items-center space-x-4">
-                        <div class="relative flex-grow">
-                            <input 
-                                type="text" 
-                                bind:value={searchQuery}
-                                placeholder="Search banks..." 
-                                class="w-full pl-10 pr-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            >
-                            <svg class="w-5 h-5 text-green-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors whitespace-nowrap">
-                            Search Banks
-                        </button>
-                    </div>
-
-                    <!-- Bank Grid with Filtering -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {#each banks.filter(bank => 
-                            bank.name.toLowerCase().includes(searchQuery.toLowerCase())
-                        ) as bank}
-                            <button 
-                                class={`p-4 border rounded-lg hover:shadow-sm transition-all duration-200 group flex flex-col items-center ${
-                                    bank.connected ? 'border-green-400 bg-green-50' : 'border-green-200 hover:border-green-400'
-                                }`}
-                                onclick={() => connectBank(bank.name)}
-                            >
-                                <div class="text-2xl mb-2">{bank.logo}</div>
-                                <p class="text-xs font-medium text-green-900 group-hover:text-green-700 text-center">{bank.name}</p>
-                                {#if bank.connected}
-                                    <div class="mt-2 flex items-center">
-                                        <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                                        <span class="text-xs text-green-600">Connected</span>
-                                    </div>
-                                {/if}
-                            </button>
-                        {/each}
-                    </div>
-                    
-                    <!-- Connected Banks Summary -->
-                    {#if banks.filter(b => b.connected).length > 0}
-                        <div class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                            <h3 class="font-medium text-green-900 mb-2">Connected Banks</h3>
-                            <p class="text-sm text-green-700">
-                                You have {banks.filter(b => b.connected).length} bank{banks.filter(b => b.connected).length !== 1 ? 's' : ''} connected. 
-                                <a href="#" class="text-green-600 hover:underline ml-2">View transactions</a>
-                            </p>
-                        </div>
-                    {/if}
-                </div>
-
-                <!-- Tax Returns & Miscellaneous -->
-                <div class="space-y-8">
-                    <!-- Tax Returns Section -->
+                    <!-- Recent Vouchers Section -->
                     <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                        <div class="mb-6">
-                            <h2 class="text-xl font-bold text-green-900 mb-4">Tax Returns</h2>
-                            <div class="flex space-x-4">
-                                <button class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
-                                    Tax Returns
-                                </button>
-                                <button class="border border-green-300 text-green-700 px-4 py-2 rounded-lg font-medium hover:bg-green-50 transition-colors">
-                                    Due Dates
-                                </button>
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-green-900 mb-2">Recent Vouchers</h2>
+                                <p class="text-green-700">Latest accounting entries</p>
                             </div>
+                            <a href="/vouchers" class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                                View All Vouchers
+                            </a>
                         </div>
                         
-                        <div class="space-y-3">
-                            <button class="w-full text-left p-3 hover:bg-green-50 rounded-lg transition-colors flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                                    <span class="text-sm text-green-900">Set Company Data</span>
+                        <div class="space-y-4">
+                            {#each recentVouchers as voucher}
+                                <div class="p-4 border border-green-100 rounded-lg hover:bg-green-50 transition-colors cursor-pointer">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h3 class="font-medium text-green-900">{voucher.dv_no}</h3>
+                                            <p class="text-sm text-green-600 mt-1">{voucher.payee_name}</p>
+                                            <p class="text-xs text-green-500 mt-1">
+                                                {new Date(voucher.voucher_date).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium text-green-900">
+                                                {formatCurrency(voucher.net_amount).replace('PHP', '₱')}
+                                            </p>
+                                            <p class="text-xs text-green-600 mt-1">Net Amount</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </button>
-                            <button class="w-full text-left p-3 hover:bg-green-50 rounded-lg transition-colors flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                                    <span class="text-sm text-green-900">Set Periods</span>
+                            {/each}
+                            
+                            {#if recentVouchers.length === 0}
+                                <div class="text-center py-8 text-green-600">
+                                    <p>No vouchers found</p>
+                                    <p class="text-sm mt-2">Process your first voucher to get started</p>
                                 </div>
-                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </button>
-                            <button class="w-full text-left p-3 hover:bg-green-50 rounded-lg transition-colors flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                                    <span class="text-sm text-green-900">Review Chart of Accounts</span>
-                                </div>
-                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </button>
+                            {/if}
                         </div>
                     </div>
 
                     <!-- Quick Actions -->
                     <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-green-900">Quick Actions</h2>
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-green-900 mb-2">Quick Actions</h2>
+                                <p class="text-green-700">Common tasks and shortcuts</p>
+                            </div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
-                            <button class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors">
+                            <a href="/projects" class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors text-center">
                                 <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mb-2">
                                     <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                     </svg>
                                 </div>
-                                <span class="text-sm text-green-800 text-center">Record Payment</span>
-                            </button>
+                                <span class="text-sm text-green-800">View Projects</span>
+                            </a>
                             
-                            <button class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors">
+                            <a href="/vouchers" class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors text-center">
                                 <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mb-2">
                                     <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
-                                <span class="text-sm text-green-800 text-center">Create Invoice</span>
-                            </button>
+                                <span class="text-sm text-green-800">Manage Vouchers</span>
+                            </a>
                             
-                            <button class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors">
-                                <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mb-2">
-                                    <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                    </svg>
-                                </div>
-                                <span class="text-sm text-green-800 text-center">New Expense</span>
-                            </button>
-                            
-                            <button class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors">
+                            <button class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors text-center">
                                 <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mb-2">
                                     <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
-                                <span class="text-sm text-green-800 text-center">Generate Report</span>
+                                <span class="text-sm text-green-800">Generate Report</span>
+                            </button>
+                            
+                            <button class="p-4 bg-green-50 rounded-lg flex flex-col items-center hover:bg-green-100 transition-colors text-center">
+                                <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm text-green-800">View Analytics</span>
                             </button>
                         </div>
                     </div>
+
+                    <!-- System Status -->
+                    <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-green-900 mb-2">System Overview</h2>
+                                <p class="text-green-700">Current system status</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm text-green-900">Database Connection</span>
+                                </div>
+                                <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                    Connected
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm text-green-900">Last Backup</span>
+                                </div>
+                                <span class="text-xs text-green-600">
+                                    {formatDate(new Date())}
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm text-green-900">System Health</span>
+                                </div>
+                                <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                    Excellent
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {/if}
         </div>
     </main>
 </div>
 
 <style>
-.dashboard-bg {
-    background: linear-gradient(120deg, #e6f9ec 0%, #f0fdf4 100%);
-}
+    .dashboard-bg {
+        background: linear-gradient(120deg, #e6f9ec 0%, #f0fdf4 100%);
+    }
 
-/* Custom scrollbar */
-:global(::-webkit-scrollbar) {
-    width: 6px;
-}
-:global(::-webkit-scrollbar-track) {
-    background: #e6f9ec;
-}
-:global(::-webkit-scrollbar-thumb) {
-    background: #6ee7b7;
-    border-radius: 3px;
-}
-:global(::-webkit-scrollbar-thumb:hover) {
-    background: #34d399;
-}
+    /* Custom scrollbar */
+    :global(::-webkit-scrollbar) {
+        width: 6px;
+    }
+    :global(::-webkit-scrollbar-track) {
+        background: #e6f9ec;
+    }
+    :global(::-webkit-scrollbar-thumb) {
+        background: #6ee7b7;
+        border-radius: 3px;
+    }
+    :global(::-webkit-scrollbar-thumb:hover) {
+        background: #34d399;
+    }
+
+    /* Loading animation */
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
 </style>

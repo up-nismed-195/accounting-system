@@ -23,7 +23,7 @@
 
   let authorized_rep = $derived(projectInfo[selectedProject]?.authorized_rep)
   let approver = $derived(projectInfo[selectedProject]?.approver)
-  let tax_value = projectInfo[selectedProject]?.tax_value || 0;
+  let tax_value = $derived(projectInfo[selectedProject]?.tax_value || 0);
 
   // Add loading state
   let vouchersLoading = $state(false);
@@ -38,6 +38,46 @@
     "Amount",
     "Tax",
   ]
+
+  // Add this function to get the actual next DV number for a project
+  async function getNextDVNumber(projectCode: string): Promise<string> {
+    if (!projectCode) return "";
+    
+    try {
+      // Get the highest DV number for this specific project
+      const { data: voucherData, error } = await supabase
+        .from("voucher")
+        .select("dv_no")
+        .eq("project_code", projectCode)
+        .order("dv_no", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("Error getting max DV number:", error);
+        return `${projectCode}-${new Date().getFullYear().toString().slice(-2)}-001`;
+      }
+
+      if (!voucherData || voucherData.length === 0) {
+        // No vouchers for this project yet, start at 001
+        return `${projectCode}-${new Date().getFullYear().toString().slice(-2)}-001`;
+      }
+
+      // Extract the number from the last DV and increment
+      const lastDV = voucherData[0].dv_no;
+      const dvParts = lastDV.split('-');
+      if (dvParts.length === 3) {
+        const lastNumber = parseInt(dvParts[2]);
+        const nextNumber = lastNumber + 1;
+        return `${projectCode}-${new Date().getFullYear().toString().slice(-2)}-${padZeroes(3, nextNumber)}`;
+      }
+      
+      // Fallback if DV format is unexpected
+      return `${projectCode}-${new Date().getFullYear().toString().slice(-2)}-001`;
+    } catch (error) {
+      console.error("Error in getNextDVNumber:", error);
+      return `${projectCode}-${new Date().getFullYear().toString().slice(-2)}-001`;
+    }
+  }
 
   // Load existing vouchers for selected project
   async function loadVouchersForProject(projectCode: string) {
@@ -104,10 +144,15 @@
     }
   });
 
-  // Auto-save function for new rows
+  // Updated saveRowToDatabase function
   async function saveRowToDatabase(row: VoucherEntry) {
-    let voucherIndex = commonInfo.summaries[commonInfo.selectedProject] + $rows.findIndex(r => r.id === row.id) + 1
-    let dv_no = `${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`
+    // Use the DV number that was already generated, don't regenerate it
+    const dv_no = row.dv_no || await getNextDVNumber(selectedProject);
+    
+    // Update the row with the DV number if it wasn't set
+    if (!row.dv_no) {
+      row.dv_no = dv_no;
+    }
 
     // Save payee first
     const { data: payeeData, error: payeeError } = await supabase
@@ -115,7 +160,7 @@
       .upsert({name: row.name, address: row.address})
       .select()
 
-    // Save voucher with apply_tax boolean
+    // Save voucher with the proper DV number
     const { data: voucherData, error: voucherError } = await supabase
       .from("voucher")
       .upsert({
@@ -141,17 +186,27 @@
     }
   }
   
+  // Updated addRow function
   async function addRow() {      
+    if (!selectedProject) {
+      alert("Please select a project first");
+      return;
+    }
+
     let row: VoucherEntry = generateRandomVoucherData();
     row.id = crypto.randomUUID();
     row.apply_tax = false;
+    
+    // Generate proper DV number for this project
+    const dvNumber = await getNextDVNumber(selectedProject);
+    row.dv_no = dvNumber;
     
     $rows = [...$rows, row];
     
     // Auto-save to database
     try {
       await saveRowToDatabase(row);
-      await loadProjects();
+      await loadProjects(); // Refresh project summaries
     } catch (error) {
       console.error("Error auto-saving row:", error);
       alert("Error saving new row to database");
@@ -176,10 +231,13 @@
       
       for (const row of $rows) {
         try {
-          // Generate DV number for each row
-          let rowIndex = $rows.findIndex(r => r.id === row.id);
-          let voucherIndex = commonInfo.summaries[selectedProject] + rowIndex + 1;
-          let dv_no = `${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`;
+          // Use existing DV number or generate new one
+          const dv_no = row.dv_no || await getNextDVNumber(selectedProject);
+          
+          // Update row with DV number if it wasn't set
+          if (!row.dv_no) {
+            row.dv_no = dv_no;
+          }
 
           // Save payee first
           const { error: payeeError } = await supabase
@@ -192,7 +250,7 @@
           const { error: voucherError } = await supabase
             .from("voucher")
             .upsert({
-              dv_no: row.dv_no || dv_no,
+              dv_no: dv_no,
               payee_name: row.name,
               project_code: selectedProject,
               payment_mode: row.mode,
@@ -235,12 +293,64 @@
     await loadProjects();
   }
 
+  // Add function to fix DV number gaps
+  async function fixDVNumberGaps() {
+    if (!selectedProject) {
+      alert("Please select a project first");
+      return;
+    }
+
+    if (!confirm("This will renumber all vouchers for this project sequentially. Continue?")) {
+      return;
+    }
+    
+    try {
+      // Get all vouchers for this project, ordered by creation date
+      const { data: vouchers, error } = await supabase
+        .from("voucher")
+        .select("*")
+        .eq("project_code", selectedProject)
+        .order("voucher_date", { ascending: true });
+      
+      if (error) {
+        console.error("Error fetching vouchers:", error);
+        alert("Error fetching vouchers for renumbering");
+        return;
+      }
+      
+      // Renumber them sequentially
+      const year = new Date().getFullYear().toString().slice(-2);
+      const updates = vouchers.map((voucher, index) => {
+        const newDVNumber = `${selectedProject}-${year}-${padZeroes(3, index + 1)}`;
+        return {
+          ...voucher,
+          dv_no: newDVNumber
+        };
+      });
+      
+      // Update all vouchers
+      for (const update of updates) {
+        await supabase
+          .from("voucher")
+          .update({ dv_no: update.dv_no })
+          .eq("id", update.id);
+      }
+      
+      alert("DV numbers have been renumbered sequentially!");
+      await loadVouchersForProject(selectedProject);
+      
+    } catch (error) {
+      console.error("Error fixing DV gaps:", error);
+      alert("Error fixing DV number gaps");
+    }
+  }
+
   import { padZeroes } from "./helpers";
 
   function generateAllVouchers() {
     $rows.forEach((row, index) => {
-      let voucherIndex = commonInfo.summaries[commonInfo.selectedProject] + index + 1
-      let dv_no = `${selectedProject}-${((new Date()).getFullYear()).toString().slice(-2)}-${padZeroes(3, voucherIndex)}`
+      // Use the existing DV number from the row
+      const dv_no = row.dv_no;
 
       data = {
         name: row.name,
@@ -382,6 +492,18 @@
             disabled={!selectedProject}
       >
         Refresh
+      </button>
+    </div>
+
+    <div style="">
+      <button
+            type="button"
+            class="border text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
+            onclick={fixDVNumberGaps}
+            disabled={!selectedProject}
+            title="Renumber all vouchers sequentially"
+      >
+        Fix DV Numbers
       </button>
     </div>
   </div>
