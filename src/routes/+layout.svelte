@@ -14,7 +14,10 @@
         <a href="/" class="flex items-center gap-2 ">
           <img src="/nismed.png" alt="NISMED Logo" class="h-13 w-13 rounded-md bg-white p-1 shadow" />
         </a>
-        {#each [{href: "/vouchers", title: "Vouchers"}, {href: "/projects", title: "Projects"}] as {href, title}}
+        {#each [
+          {href: "/projects", title: "Projects"},
+          {href: "/reports", title: "Reports"}, 
+        ] as {href, title}}
             <a href={href} class={`hover:text-green-200 ${`hover:bg-green-800`} px-5 py-3 transition-colors font-semibold rounded-full ${page.url.pathname.startsWith(href) ? `bg-green-800` : ''}`}>{title}</a>
         {/each}
       </div>

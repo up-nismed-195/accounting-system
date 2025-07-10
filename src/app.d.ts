@@ -40,8 +40,8 @@ declare global {
 	interface voucher {
 		dv_no: string,
 		id?: number,
-		payee_name: string,
-		project_code: string,
+		payee_id: string,
+		project_id: string,
 		date: string,
 		nth_yearly_voucher: number,
 		gross: number,
