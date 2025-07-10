@@ -9,6 +9,8 @@
   let dateFilter: string = $state('all');
   let customStartDate: string = $state('');
   let customEndDate: string = $state('');
+  let projectFilter: string = $state('all');
+  let projects: any[] = $state([]);
 
   async function loadVouchers() {
     const { data, error } = await supabase
@@ -34,24 +36,39 @@
     }
   }
 
+  async function loadProjects() {
+    const { data, error } = await supabase
+      .from("project")
+      .select("code, name")
+      .order("code", { ascending: true });
+
+    if (data) {
+      projects = data;
+    }
+    if (error) {
+      console.error("Error loading projects:", error);
+    }
+  }
+
   function filterVouchers() {
     const now = new Date();
     let filtered = [...vouchers];
 
+    // Date filtering
     switch (dateFilter) {
       case "today":
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        filtered = vouchers.filter(v => new Date(v.voucher_date) >= today);
+        filtered = filtered.filter(v => new Date(v.voucher_date) >= today);
         break;
 
       case "week":
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        filtered = vouchers.filter(v => new Date(v.voucher_date) >= weekAgo);
+        filtered = filtered.filter(v => new Date(v.voucher_date) >= weekAgo);
         break;
 
       case "month":
         const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        filtered = vouchers.filter(v => new Date(v.voucher_date) >= monthAgo);
+        filtered = filtered.filter(v => new Date(v.voucher_date) >= monthAgo);
         break;
 
       case "custom":
@@ -59,7 +76,7 @@
           const startDate = new Date(customStartDate);
           const endDate = new Date(customEndDate);
           endDate.setHours(23, 59, 59, 999);
-          filtered = vouchers.filter(v => {
+          filtered = filtered.filter(v => {
             const voucherDate = new Date(v.voucher_date);
             return voucherDate >= startDate && voucherDate <= endDate;
           });
@@ -68,8 +85,13 @@
 
       case "all":
       default:
-        filtered = vouchers;
+        // No date filtering needed
         break;
+    }
+
+    // Project filtering
+    if (projectFilter !== 'all') {
+      filtered = filtered.filter(v => v.project_code === projectFilter);
     }
 
     filteredVouchers = filtered;
@@ -104,7 +126,7 @@
 
   onMount(async () => {
     $projectsLoading = true;
-    await loadVouchers();
+    await Promise.all([loadVouchers(), loadProjects()]);
     $projectsLoading = false;
   });
 </script>
@@ -116,36 +138,52 @@
     {#if $projectsLoading}
       <Spinner />
     {/if}
+  </div>
+</div>
 
+<!-- Filters Section -->
+<div class="mt-4 flex flex-wrap gap-4 items-center">
+  <div class="flex gap-2 items-center">
+    <span class="text-sm font-medium">Filter by date:</span>
+    <select 
+      bind:value={dateFilter}
+      class="bg-white border border-gray-300 text-sm rounded-lg px-3 py-2"
+    >
+      <option value="all">All Time</option>
+      <option value="today">Today</option>
+      <option value="week">Last 7 Days</option>
+      <option value="month">Last 30 Days</option>
+      <option value="custom">Custom Range</option>
+    </select>
+  </div>
+
+  {#if dateFilter === 'custom'}
     <div class="flex gap-2 items-center">
-      <span class="text-sm font-medium">Filter by date:</span>
-      <select 
-        bind:value={dateFilter}
-        class="bg-white border border-gray-300 text-sm rounded-lg px-3 py-2"
-      >
-        <option value="all">All Time</option>
-        <option value="today">Today</option>
-        <option value="week">Last 7 Days</option>
-        <option value="month">Last 30 Days</option>
-        <option value="custom">Custom Range</option>
-      </select>
+      <input 
+        type="date" 
+        bind:value={customStartDate}
+        class="border border-gray-300 text-sm rounded px-2 py-1"
+      />
+      <span class="text-sm">to</span>
+      <input 
+        type="date" 
+        bind:value={customEndDate}
+        class="border border-gray-300 text-sm rounded px-2 py-1"
+      />
     </div>
+  {/if}
 
-    {#if dateFilter === 'custom'}
-      <div class="flex gap-2 items-center">
-        <input 
-          type="date" 
-          bind:value={customStartDate}
-          class="border border-gray-300 text-sm rounded px-2 py-1"
-        />
-        <span class="text-sm">to</span>
-        <input 
-          type="date" 
-          bind:value={customEndDate}
-          class="border border-gray-300 text-sm rounded px-2 py-1"
-        />
-      </div>
-    {/if}
+  <div class="flex gap-2 items-center">
+    <span class="text-sm font-medium">Filter by project:</span>
+    <select 
+      bind:value={projectFilter}
+      class="bg-white border border-gray-300 text-sm rounded-lg px-3 py-2 min-w-[200px]"
+    >
+      <option value="all">All Projects</option>
+      {#each projects as project}
+        <option value={project.code}>{project.code} - {project.name}</option>
+      {/each}
+    </select>
   </div>
 </div>
 
@@ -175,7 +213,7 @@
         </tr>
       {:else if filteredVouchers.length === 0}
         <tr>
-          <td colspan="7" class="px-6 py-4 text-center text-gray-500">No vouchers found for selected range.</td>
+          <td colspan="7" class="px-6 py-4 text-center text-gray-500">No vouchers found for selected filters.</td>
         </tr>
       {:else}
         {#each filteredVouchers as v}
