@@ -29,19 +29,31 @@
   let menuPosition = $state({ x: 0, y: 0 });
 
   function toggleActions(id: string, event: MouseEvent) {
-    if (openActionId === id) {
-      openActionId = null;
-    } else {
-      const rect = (event.target as HTMLElement).closest('button')?.getBoundingClientRect();
-      if (rect) {
+  if (openActionId === id) {
+    openActionId = null;
+  } else {
+    const rect = (event.target as HTMLElement).closest('button')?.getBoundingClientRect();
+    if (rect) {
+      const dropdownHeight = 200; 
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+        menuPosition = {
+          x: rect.right - 200,
+          y: rect.top - dropdownHeight - 5 
+        };
+      } else {
         menuPosition = {
           x: rect.right - 200,
           y: rect.bottom + 5
         };
       }
-      openActionId = id;
     }
+    openActionId = id;
   }
+}
 
   function handleClickOutside(event: MouseEvent) {
     if (!(event.target as HTMLElement).closest('.action-menu') || 
