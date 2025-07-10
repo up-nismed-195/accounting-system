@@ -3,3 +3,4 @@ let ^ those appear in the modals
 toasts
 loading screen
 save data before deleting
+keyboard shortcuts

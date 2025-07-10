@@ -2,8 +2,6 @@
   import "../app.css"
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
-
-  // const HUE = "green"
 </script>
 
 <nav class={`px-5 py-3 w-full bg-green-700 text-white font-display shadow-md`}>
@@ -15,6 +13,7 @@
           <img src="/nismed.png" alt="NISMED Logo" class="h-13 w-13 rounded-md bg-white p-1 shadow" />
         </a>
         {#each [
+          {href: "/vouchers", title: "Vouchers"},
           {href: "/projects", title: "Projects"},
           {href: "/reports", title: "Reports"}, 
         ] as {href, title}}
