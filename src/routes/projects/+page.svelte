@@ -122,7 +122,7 @@
   </div>
 {/if}
 
-<table class="summary-table">
+<table class="summary-table border-2 border-green-800">
   <thead>
     <tr>
       <th>Code</th>
@@ -130,7 +130,7 @@
       <th>Total Vouchers</th>
       <th>Gross Total</th>
       <th>Net Total</th>
-      <th>Action</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -141,8 +141,10 @@
         <td>{s.total_vouchers}</td>
         <td>{s.gross_total}</td>
         <td>{s.net_total}</td>
-        <td>
-          {s.project_id}
+        <td class="flex gap-3">
+          <!-- {s.project_id} -->
+          <span class="text-blue-500 hover:underline cursor-pointer">Edit</span>
+          <span class="text-red-500 hover:underline cursor-pointer">Delete</span>
         </td>
       </tr>
     {/each}
